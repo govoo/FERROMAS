@@ -5,9 +5,10 @@ import Home from './pages/home.js';
 
 function App() {
   return (
+    //Definicion rutas React
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />}/>
       </Routes>
     </Router>
   )
