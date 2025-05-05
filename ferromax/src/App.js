@@ -1,11 +1,16 @@
 import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-function putito() {
+import Home from './pages/home.js';
+
+function App() {
   return (
-    <div>putito
-        <p>hola </p>     
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </Router>
   )
 }
 
-export default putito
+export default App
