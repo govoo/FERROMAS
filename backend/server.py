@@ -1,5 +1,5 @@
 from flask import Flask
-from controladores import home_bp
+from controladores import home_bp,Musuario,Mproducto,Mventa,Mbodega
 from flask_mysqldb import MySQL
 
 
@@ -21,6 +21,10 @@ def index():
     return str(data)
 
 app.register_blueprint(home_bp)
+app.register_blueprint(Musuario)
+app.register_blueprint(Mproducto)
+app.register_blueprint(Mventa)
+app.register_blueprint(Mbodega)
 
 if __name__ == "__main__":
     app.run(debug=True)
