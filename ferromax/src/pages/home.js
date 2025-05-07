@@ -1,5 +1,6 @@
 import React from 'react'
 import ferromasLogo from '../img/ferromas_logo.svg';
+import { useState,useEffect } from 'react';
 
 function home() {
   return (

@@ -1,7 +1,7 @@
 from flask import Flask
 from controladores import home_bp,Musuario,Mproducto,Mventa,Mbodega
 from flask_mysqldb import MySQL
-
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -10,6 +10,7 @@ app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'root'
 app.config['MYSQL_DB'] = 'ferromas_db'
 
+CORS(app) #Protege a los usuarios de ataques
 mysql = MySQL(app)
 
 @app.route('/')
