@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app , Response
+from flask import Blueprint, current_app , Response, jsonify, request
 import json
 
 Mproducto = Blueprint("producto",__name__)
@@ -25,3 +25,116 @@ def mantenedor_producto():
     # Serializamos manualmente para controlar el orden
     response_data = json.dumps({"producto": producto}, ensure_ascii=False)
     return Response(response_data, content_type='application/json')
+
+#GET
+
+@Mproducto.route("/mantenedor_producto/obtener_producto", methods = ["GET"])
+def obtener_producto():
+    id = request.args.get("id")
+    if not id:
+        return Response(json.dumps({"error": "Debes proporcionar un ID"}), content_type='application/json', status=400)
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+    cur.execute("""SELECT * FROM producto WHERE idProducto = %s""", (id,)) 
+    data = cur.fetchone()
+    cur.close()
+    producto = [
+        {
+            "id": data[0],
+            "nombre_producto": data[1],
+            "precio_producto": data[2],
+            "bodega": data[3]
+        }
+    ]
+    response_data = json.dumps({"productos": producto}, ensure_ascii=False)
+    return Response(response_data, content_type='application/json')
+
+#POST
+
+@Mproducto.route("/mantenedor_producto/crear_producto", methods = ["POST"])
+def crear_producto():
+    data = request.get_json()
+    
+    # Extraer los valores
+    nombre_producto = data["nombre_producto"]
+    precio_producto = data["precio_producto"]
+    bodega = data["bodega"]
+    
+    # Conectar a la base de datos
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+    
+    # Ejecutar la consulta SQL de inserción
+    cur.execute("""
+        INSERT INTO producto (nombre_producto, precio_producto, bodega_idBodega)
+        VALUES (%s, %s, %s)
+    """, (nombre_producto, precio_producto, bodega))
+
+    # Confirmar la transacción
+    mysql.connection.commit()
+
+    # Cerrar el cursor
+    cur.close()
+
+    # Devolver una respuesta de éxito
+    return jsonify({"mensaje": "Producto creado exitosamente"}), 201
+
+#DELETE
+@Mproducto.route("/mantenedor_producto/eliminar_producto", methods = ["DELETE"])
+def eliminar_producto():
+    id = request.args.get("id")
+
+    if not id:
+        return jsonify({"error": "Falta el ID del Producto"}), 400
+    
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+    
+    cur.execute("DELETE FROM producto WHERE idProducto = %s", (id,))
+    
+    mysql.connection.commit()
+    
+    if cur.rowcount == 0:
+        return jsonify({"error": "Producto no encontrado"}), 404
+
+    cur.close()
+
+    return jsonify({"mensaje": "Producto eliminado exitosamente"}), 200
+
+#UPDATE
+@Mproducto.route("/mantenedor_producto/editar_producto", methods = ["PUT"])
+def editar_producto():
+    id = request.args.get("id")  # Obtener el ID de la venta desde los parámetros de la consulta
+
+    if not id:
+        return jsonify({"error": "Falta el ID del producto"}), 400
+    
+    # Obtener los nuevos valores para la actualización
+    nombre_producto = request.json.get("nombre_producto")
+    precio_producto = request.json.get("precio_producto")
+    bodega = request.json.get("bodega")
+
+    # Validar si los datos son correctos
+    if not nombre_producto or not precio_producto or not bodega:
+        return jsonify({"error": "Faltan datos para actualizar el Producto"}), 400
+    
+    # Conexión a la base de datos
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+    
+    # Ejecutar la consulta SQL para actualizar la venta
+    cur.execute("""
+        UPDATE producto
+        SET nombre_producto = %s, precio_producto = %s, bodega_idBodega = %s
+        WHERE idProducto = %s
+    """, (nombre_producto, precio_producto, bodega, id))
+    
+    mysql.connection.commit()
+
+    # Verificar si la actualización fue exitosa
+    if cur.rowcount == 0:
+        return jsonify({"error": "Producto no encontrado"}), 404
+
+    cur.close()
+
+    return jsonify({"mensaje": "Producto actualizado exitosamente"}), 200

@@ -29,7 +29,7 @@ def mantenedor_bodega():
 #GET
 
 @Mbodega.route("/mantenedor_bodega/obtener_bodega", methods = ["GET"])
-def obtener_venta():
+def obtener_bodega():
     id = request.args.get("id")
     if not id:
         return Response(json.dumps({"error": "Debes proporcionar un ID"}), content_type='application/json', status=400)
@@ -52,7 +52,7 @@ def obtener_venta():
 #POST
 
 @Mbodega.route("/mantenedor_bodega/crear_bodega", methods = ["POST"])
-def crear_venta():
+def crear_bodega():
     data = request.get_json()
     
     # Extraer los valores
@@ -81,11 +81,11 @@ def crear_venta():
 
 #DELETE
 @Mbodega.route("/mantenedor_bodega/eliminar_bodega", methods = ["DELETE"])
-def eliminar_venta():
+def eliminar_bodega():
     id = request.args.get("id")
 
     if not id:
-        return jsonify({"error": "Falta el ID de la venta"}), 400
+        return jsonify({"error": "Falta el ID de la bodega"}), 400
     
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
@@ -95,19 +95,19 @@ def eliminar_venta():
     mysql.connection.commit()
     
     if cur.rowcount == 0:
-        return jsonify({"error": "Venta no encontrada"}), 404
+        return jsonify({"error": "Bodega no encontrada"}), 404
 
     cur.close()
 
-    return jsonify({"mensaje": "Venta eliminada exitosamente"}), 200
+    return jsonify({"mensaje": "Bodega eliminada exitosamente"}), 200
 
 #UPDATE
 @Mbodega.route("/mantenedor_bodega/editar_bodega", methods = ["PUT"])
-def editar_venta():
+def editar_bodega():
     id = request.args.get("id")  # Obtener el ID de la venta desde los parámetros de la consulta
 
     if not id:
-        return jsonify({"error": "Falta el ID de la venta"}), 400
+        return jsonify({"error": "Falta el ID de la Bodega"}), 400
     
     # Obtener los nuevos valores para la actualización
     cantidad_productos = request.json.get("cantidad_productos")
@@ -116,7 +116,7 @@ def editar_venta():
 
     # Validar si los datos son correctos
     if not cantidad_productos or not fecha_vencimiento or not estado_producto:
-        return jsonify({"error": "Faltan datos para actualizar la venta"}), 400
+        return jsonify({"error": "Faltan datos para actualizar la bodega"}), 400
     
     # Conexión a la base de datos
     mysql = current_app.extensions["mysql"]
@@ -133,8 +133,8 @@ def editar_venta():
 
     # Verificar si la actualización fue exitosa
     if cur.rowcount == 0:
-        return jsonify({"error": "Venta no encontrada"}), 404
+        return jsonify({"error": "Bodega no encontrada"}), 404
 
     cur.close()
 
-    return jsonify({"mensaje": "Venta actualizada exitosamente"}), 200
+    return jsonify({"mensaje": "Bodega actualizada exitosamente"}), 200
