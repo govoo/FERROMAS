@@ -63,7 +63,7 @@ def crear_venta():
     data = request.get_json()
     
     # Extraer los valores
-    usuario_id = data["Usuario_idUsuario"]
+    usuario_id = data["usuario_id"]
     cantidad_productos = data["cantidad_productos"]
     fecha_venta = data["fecha_venta"]
     total = data["total"]
@@ -98,7 +98,7 @@ def eliminar_venta():
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
     
-    cur.execute("DELETE FROM ventas WHERE idVentas = %s", (id,))
+    cur.execute("DELETE FROM bodega WHERE idBodega = %s", (id,))
     
     mysql.connection.commit()
     
@@ -107,7 +107,7 @@ def eliminar_venta():
 
     cur.close()
 
-    return jsonify({"mensaje": "Venta eliminada exitosamente"}), 200
+    return jsonify({"mensaje": "Bodega eliminada exitosamente"}), 200
 
 #UPDATE
 @Mventa.route("/mantenedor_venta/editar_venta", methods = ["PUT"])
