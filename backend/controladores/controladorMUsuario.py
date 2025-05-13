@@ -31,7 +31,7 @@ def mantenedor_usuario():
 #GET
 
 @Musuario.route("/mantenedor_usuario/obtener_usuario", methods = ["GET"])
-def obtener_producto():
+def obtener_usuario():
     id = request.args.get("id")
     if not id:
         return Response(json.dumps({"error": "Debes proporcionar un ID"}), content_type='application/json', status=400)
@@ -56,7 +56,7 @@ def obtener_producto():
 #POST
 
 @Musuario.route("/mantenedor_usuario/crear_usuario", methods = ["POST"])
-def crear_producto():
+def crear_usuario():
     data = request.get_json()
     
     # Extraer los valores
@@ -87,7 +87,7 @@ def crear_producto():
 
 #DELETE
 @Musuario.route("/mantenedor_usuario/eliminar_usuario", methods = ["DELETE"])
-def eliminar_producto():
+def eliminar_usuario():
     id = request.args.get("id")
 
     if not id:
@@ -109,7 +109,7 @@ def eliminar_producto():
 
 #UPDATE
 @Musuario.route("/mantenedor_usuario/editar_usuario", methods = ["PUT"])
-def editar_producto():
+def editar_usuario():
     id = request.args.get("id")  # Obtener el ID de la venta desde los parámetros de la consulta
 
     if not id:
