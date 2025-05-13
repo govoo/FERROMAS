@@ -113,10 +113,6 @@ def editar_producto():
     nombre_producto = request.json.get("nombre_producto")
     precio_producto = request.json.get("precio_producto")
     bodega = request.json.get("bodega")
-
-    # Validar si los datos son correctos
-    if not nombre_producto or not precio_producto or not bodega:
-        return jsonify({"error": "Faltan datos para actualizar el Producto"}), 400
     
     # Conexión a la base de datos
     mysql = current_app.extensions["mysql"]

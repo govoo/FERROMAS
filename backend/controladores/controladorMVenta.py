@@ -121,10 +121,6 @@ def editar_venta():
     cantidad_productos = request.json.get("cantidad_productos")
     fecha_venta = request.json.get("fecha_venta")
     total = request.json.get("total")
-
-    # Validar si los datos son correctos
-    if not cantidad_productos or not fecha_venta or not total:
-        return jsonify({"error": "Faltan datos para actualizar la venta"}), 400
     
     # Conexión a la base de datos
     mysql = current_app.extensions["mysql"]

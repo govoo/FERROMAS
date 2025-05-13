@@ -113,10 +113,6 @@ def editar_bodega():
     cantidad_productos = request.json.get("cantidad_productos")
     fecha_vencimiento = request.json.get("fecha_vencimiento")
     estado_producto = request.json.get("estado_producto")
-
-    # Validar si los datos son correctos
-    if not cantidad_productos or not fecha_vencimiento or not estado_producto:
-        return jsonify({"error": "Faltan datos para actualizar la bodega"}), 400
     
     # Conexión a la base de datos
     mysql = current_app.extensions["mysql"]
