@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app,Response, jsonify, request
 import json
+from flask_cors import CORS
 
 Musuario = Blueprint("usuario",__name__)
 
@@ -47,7 +48,8 @@ def obtener_usuario():
             "segundo_nombre": data[2],
             "apellido": data[3],
             "correo": data[4],
-            "telefono": data[5]
+            "telefono": data[5],
+            "clave": data[6]
         }
     ]
     response_data = json.dumps({"usuarios": usuarios}, ensure_ascii=False)
@@ -142,3 +144,27 @@ def editar_usuario():
     cur.close()
 
     return jsonify({"mensaje": "Usuario actualizado exitosamente"}), 200
+
+# login
+@Musuario.route("/mantenedor_usuario/login_usuario", methods=["POST"])
+def login_usuario():
+    data = request.get_json()
+    correo = data.get("email")
+    clave = data.get("password")
+
+    if not correo or not clave:
+        return jsonify({"success": False, "message": "Faltan campos"}), 400
+
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+
+    cur.execute("SELECT * FROM usuario WHERE correo_usuario = %s AND clave_usuario = %s", (correo, clave))
+    usuario = cur.fetchone()
+    columnas = [col[0] for col in cur.description] if usuario else []
+    cur.close()
+
+    if usuario:
+        usuario_dict = dict(zip(columnas, usuario))
+        return jsonify({"success": True, "usuario": usuario_dict})
+    else:
+        return jsonify({"success": False, "message": "Correo o clave incorrectos"}), 401

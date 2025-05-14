@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Form, Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
-import { useEffect } from 'react';
 
 function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -10,23 +9,40 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
-    setTimeout(() => {
-      setLoading(false);
-      if (formData.email === 'admin@ferromas.cl' && formData.password === 'admin123') {
-        navigate('ferromas/home');
+    try {
+      const res = await fetch('http://localhost:5000/mantenedor_usuario/login_usuario', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // Guardar datos del usuario en localStorage (opcional)
+        localStorage.setItem('usuario', JSON.stringify(data.usuario));
+        navigate('/ferromas/home'); // Redirige a la página protegida
       } else {
-        setError('Correo o contraseña incorrectos');
+        setError(data.message || 'Credenciales inválidas');
       }
-    }, 1000);
+    } catch (err) {
+      console.error(err);
+      setError('Error al conectar con el servidor');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,4 +90,3 @@ function Login() {
 }
 
 export default Login;
-    

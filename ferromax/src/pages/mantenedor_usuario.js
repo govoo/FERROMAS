@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Form, Row, Col, Modal } from 'react-bootstrap';
 import '../styles/main-content.css';
-import {useEffect } from 'react';
 
 function UsuarioCrud() {
   const [usuarios, setUsuarios] = useState([]);
   const [formData, setFormData] = useState({
-    p_nombre_usuario: '',
-    s_nombre_usuario: '',
-    apellido_usuario: '',
-    correo_usuario: '',
-    telefono_usuario: '',
+    nombre: '',
+    segundo_nombre: '',
+    apellido: '',
+    correo: '',
+    telefono: '',
+    clave: ''
   });
   const [editIndex, setEditIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  // ✅ Obtener usuarios al cargar el componente
+  useEffect(() => {
+    fetch('http://localhost:5000/mantenedor_usuario')
+      .then(res => res.json())
+      .then(data => {
+        if (data.usuarios) setUsuarios(data.usuarios);
+      })
+      .catch(err => console.error("Error al obtener usuarios:", err));
+  }, []);
 
   const handleChange = e =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,7 +32,7 @@ function UsuarioCrud() {
     e.preventDefault();
     if (editIndex !== null) {
       const updated = [...usuarios];
-      updated[editIndex] = { ...formData, idUsuario: usuarios[editIndex].idUsuario };
+      updated[editIndex] = { ...formData, id: usuarios[editIndex].id };
       setUsuarios(updated);
       setEditIndex(null);
     } else {
@@ -30,16 +40,17 @@ function UsuarioCrud() {
         ...usuarios,
         {
           ...formData,
-          idUsuario: usuarios.length > 0 ? usuarios[usuarios.length - 1].idUsuario + 1 : 1,
+          id: usuarios.length > 0 ? usuarios[usuarios.length - 1].id + 1 : 1,
         },
       ]);
     }
     setFormData({
-      p_nombre_usuario: '',
-      s_nombre_usuario: '',
-      apellido_usuario: '',
-      correo_usuario: '',
-      telefono_usuario: '',
+      nombre: '',
+      segundo_nombre: '',
+      apellido: '',
+      correo: '',
+      telefono: '',
+      clave: ''
     });
     setShowModal(false);
   };
@@ -51,7 +62,7 @@ function UsuarioCrud() {
   };
 
   const handleDelete = id => {
-    const filtrado = usuarios.filter(u => u.idUsuario !== id);
+    const filtrado = usuarios.filter(u => u.id !== id);
     setUsuarios(filtrado);
   };
 
@@ -74,23 +85,25 @@ function UsuarioCrud() {
               <th>Apellido</th>
               <th>Correo</th>
               <th>Teléfono</th>
+              <th>Clave</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {usuarios.map((u, index) => (
-              <tr key={u.idUsuario}>
-                <td>{u.idUsuario}</td>
-                <td>{u.p_nombre_usuario}</td>
-                <td>{u.s_nombre_usuario}</td>
-                <td>{u.apellido_usuario}</td>
-                <td>{u.correo_usuario}</td>
-                <td>{u.telefono_usuario}</td>
+              <tr key={u.id || index}>
+                <td>{u.id}</td>
+                <td>{u.nombre}</td>
+                <td>{u.segundo_nombre}</td>
+                <td>{u.apellido}</td>
+                <td>{u.correo}</td>
+                <td>{u.telefono}</td>
+                <td>{u.clave}</td>
                 <td>
                   <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(index)}>
                     Editar
                   </Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(u.idUsuario)}>
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(u.id)}>
                     Eliminar
                   </Button>
                 </td>
@@ -112,9 +125,9 @@ function UsuarioCrud() {
                 <Form.Group className="mb-3">
                   <Form.Label>Primer Nombre</Form.Label>
                   <Form.Control
-                    name="p_nombre_usuario"
+                    name="nombre"
                     type="text"
-                    value={formData.p_nombre_usuario}
+                    value={formData.nombre}
                     onChange={handleChange}
                     required
                   />
@@ -124,9 +137,9 @@ function UsuarioCrud() {
                 <Form.Group className="mb-3">
                   <Form.Label>Segundo Nombre</Form.Label>
                   <Form.Control
-                    name="s_nombre_usuario"
+                    name="segundo_nombre"
                     type="text"
-                    value={formData.s_nombre_usuario}
+                    value={formData.segundo_nombre}
                     onChange={handleChange}
                     required
                   />
@@ -136,9 +149,9 @@ function UsuarioCrud() {
             <Form.Group className="mb-3">
               <Form.Label>Apellido</Form.Label>
               <Form.Control
-                name="apellido_usuario"
+                name="apellido"
                 type="text"
-                value={formData.apellido_usuario}
+                value={formData.apellido}
                 onChange={handleChange}
                 required
               />
@@ -146,19 +159,29 @@ function UsuarioCrud() {
             <Form.Group className="mb-3">
               <Form.Label>Correo Electrónico</Form.Label>
               <Form.Control
-                name="correo_usuario"
+                name="correo"
                 type="email"
-                value={formData.correo_usuario}
+                value={formData.correo}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Teléfono</Form.Label>
+              <Form.Control
+                name="telefono"
+                type="number"
+                value={formData.telefono}
                 onChange={handleChange}
                 required
               />
             </Form.Group>
             <Form.Group>
-              <Form.Label>Teléfono</Form.Label>
+              <Form.Label>Clave</Form.Label>
               <Form.Control
-                name="telefono_usuario"
-                type="number"
-                value={formData.telefono_usuario}
+                name="clave"
+                type="password"
+                value={formData.clave}
                 onChange={handleChange}
                 required
               />

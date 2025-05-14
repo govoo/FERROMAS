@@ -1,29 +1,35 @@
-from flask import Flask,Response
-from controladores import home_bp,Musuario,Mproducto,Mventa,Mbodega
+from flask import Flask, Response
+from controladores import home_bp, Musuario, Mproducto, Mventa, Mbodega
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 import json
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
+# Configuración de base de datos
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'admin'
 app.config['MYSQL_DB'] = 'ferromas_db'
 
-CORS(app) #Protege a los usuarios de ataques
-mysql = MySQL(app)
+# Habilita CORS para permitir conexiones desde React (localhost:3000)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
+# Inicializa MySQL
+mysql = MySQL(app)
 app.extensions["mysql"] = mysql
 
+# Ruta de prueba directa
 @app.route('/')
 def index():
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM usuario")
     data = cur.fetchall()
     cur.close()
-    
-    # Construimos el JSON de manera ordenada
+
     usuarios = [
         {
             "id": usuario[0],
@@ -36,10 +42,10 @@ def index():
         for usuario in data
     ]
 
-    # Serializamos manualmente para controlar el orden
     response_data = json.dumps({"usuarios": usuarios}, ensure_ascii=False)
     return Response(response_data, content_type='application/json')
 
+# Registrar los blueprints
 app.register_blueprint(home_bp)
 app.register_blueprint(Musuario)
 app.register_blueprint(Mproducto)
