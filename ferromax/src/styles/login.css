@@ -1,0 +1,61 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+.login-wrapper {
+  background: linear-gradient(-45deg, #1c1c1c, #2b2b2b, #121212, #1a1a1a);
+  background-size: 400% 400%;
+  animation: moveBg 10s ease infinite;
+  width: 100vw;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+@keyframes moveBg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.login-wrapper .card {
+  background-color: #1f1f1f !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 1rem;
+}
+
+.login-wrapper .btn-primary {
+  background-color: #f4b400 !important;
+  color: #121212 !important;
+  border: none !important;
+}
+
+.login-wrapper .btn-primary:hover {
+  background-color: #d9a100 !important;
+  color: #ffffff !important;
+}
+
+.login-wrapper .form-control {
+  background-color: #2b2b2b !important;
+  border: 1px solid #444 !important;
+  color: #ffffff !important;
+}
+
+.login-wrapper .form-control:focus {
+  background-color: #2b2b2b !important;
+  border-color: #f4b400 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0.2rem rgba(244, 180, 0, 0.25) !important;
+}
+
+.login-wrapper .text-muted {
+  color: #bbbbbb !important;
+}
+
+.login-wrapper a {
+  color: #f4b400;
+  text-decoration: none;
+}
+
+.login-wrapper a:hover {
+  text-decoration: underline;
+}
