@@ -1,7 +1,10 @@
 from flask import Blueprint, current_app,Response, jsonify, request
 import json
+from flask_cors import CORS
 
 Musuario = Blueprint("usuario",__name__)
+
+CORS(Musuario)
 
 @Musuario.route("/mantenedor_usuario")
 def mantenedor_usuario():
@@ -63,10 +66,11 @@ def crear_usuario():
     
     # Extraer los valores
     nombre = data["nombre"]
-    segundo_nombre = data["precio_producto"]
-    apellido = data["bodega"]
+    segundo_nombre = data["segundo_nombre"]
+    apellido = data["apellido"]
     correo = data["correo"]
     telefono = data["telefono"]
+    clave_usuario = data["contraseña"]
     
     # Conectar a la base de datos
     mysql = current_app.extensions["mysql"]
@@ -76,7 +80,7 @@ def crear_usuario():
     cur.execute("""
         INSERT INTO usuario (p_nombre_usuario, s_nombre_usuario, apellido_usuario, correo_usuario, telefono_usuario, clave_usuario)
         VALUES (%s, %s, %s, %s, %s, %s)
-    """, (nombre, segundo_nombre, apellido,correo,telefono))
+    """, (nombre, segundo_nombre, apellido,correo,telefono,clave_usuario))
 
     # Confirmar la transacción
     mysql.connection.commit()
@@ -123,7 +127,7 @@ def editar_usuario():
     apellido = request.json.get("apellido")
     correo = request.json.get("correo")
     telefono = request.json.get("telefono")
-    password = request.json.get("password")
+    clave_usuario = request.json.get("contraseña")
     
     # Conexión a la base de datos
     mysql = current_app.extensions["mysql"]
@@ -134,7 +138,7 @@ def editar_usuario():
         UPDATE usuario
         SET p_nombre_usuario = %s, s_nombre_usuario = %s, apellido_usuario = %s, correo_usuario = %s, telefono_usuario = %s, clave_usuario = %s
         WHERE idUsuario = %s
-    """, (nombre, segundo_nombre, apellido, correo, telefono, password, id))
+    """, (nombre, segundo_nombre, apellido, correo, telefono, clave_usuario, id))
     
     mysql.connection.commit()
 
@@ -145,3 +149,27 @@ def editar_usuario():
     cur.close()
 
     return jsonify({"mensaje": "Usuario actualizado exitosamente"}), 200
+
+# login
+@Musuario.route("/mantenedor_usuario/login_usuario", methods=["POST"])
+def login_usuario():
+    data = request.get_json()
+    correo = data.get("email")
+    clave = data.get("password")
+
+    if not correo or not clave:
+        return jsonify({"success": False, "message": "Faltan campos"}), 400
+
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+
+    cur.execute("SELECT * FROM usuario WHERE correo_usuario = %s AND clave_usuario = %s", (correo, clave))
+    usuario = cur.fetchone()
+    columnas = [col[0] for col in cur.description] if usuario else []
+    cur.close()
+
+    if usuario:
+        usuario_dict = dict(zip(columnas, usuario))
+        return jsonify({"success": True, "usuario": usuario_dict})
+    else:
+        return jsonify({"success": False, "message": "Correo o clave incorrectos"}), 401
