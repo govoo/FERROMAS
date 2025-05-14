@@ -1,25 +1,30 @@
-import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Login from './pages/login';
 
-import Home from './pages/home.js';
-import MantenedorUsuario from './pages/mantenedor_usuario.js';
-import MantenedorProducto from './pages/mantenedor_producto.js';
-import MantenedorVenta from './pages/mantenedor_venta.js';
-import MantenedorBodega from './pages/mantenedor_bodega.js';
+import Home from './pages/home';
+import Usuario from './pages/mantenedor_usuario';
+import Producto from './pages/mantenedor_producto';
+import Ventas from './pages/mantenedor_venta';
+import Bodega from './pages/mantenedor_bodega';
+import './styles/main-content.css'; // si estás en App.js
+
 
 function App() {
   return (
-    //Definicion rutas React
     <Router>
       <Routes>
-        <Route path="/" element={<Home />}/>
-        <Route path="/mantenedor_usuario" element={<MantenedorUsuario />}/>
-        <Route path="/mantenedor_producto" element={<MantenedorProducto />}/>
-        <Route path="/mantenedor_venta" element={<MantenedorVenta />}/>
-        <Route path="/mantenedor_bodega" element={<MantenedorBodega />}/>
+        <Route path="/" element={<Login />} />
+        <Route path="/ferromas" element={<Layout />}>
+          <Route path="home" element={<Home />} />
+          <Route path="usuario" element={<Usuario/>} />
+          <Route path="producto" element={<Producto />} />
+          <Route path="venta" element={<Ventas />} />
+          <Route path="bodega" element={<Bodega />} />
+        </Route>
       </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

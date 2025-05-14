@@ -1,0 +1,44 @@
+.main-content {
+  background-color: #f7f7f7;
+  min-height: 100vh;
+  padding: 2rem;
+  margin: 0;
+  width: 100%;
+}
+
+.main-box {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin: 0 auto; /* centrado */
+  max-width: 1200px; /* límite opcional para que no se expanda demasiado en pantallas grandes */
+}
+
+
+.main-content h3 {
+  color: #1c1c1c;
+  font-weight: bold;
+}
+
+.main-content .btn-primary {
+  background-color: #f4b400;
+  border: none;
+  color: #1c1c1c;
+}
+
+.main-content .btn-primary:hover {
+  background-color: #d9a100;
+  color: #ffffff;
+}
+
+.main-content .form-control {
+  border: 1px solid #ccc;
+  background-color: #fff;
+}
+
+.main-content .form-control:focus {
+  border-color: #f4b400;
+  box-shadow: 0 0 0 0.15rem rgba(244, 180, 0, 0.25);
+}
+

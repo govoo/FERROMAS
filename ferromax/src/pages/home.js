@@ -1,19 +1,18 @@
-import React from 'react'
-import ferromasLogo from '../img/ferromas_logo.svg';
+import React from 'react';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useState,useEffect } from 'react';
 
-function home() {
+function Home() {
   return (
-    <div class="text-center">
-        <nav class="navbar bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <img src={ferromasLogo} alt="Logo" width="50" height="50" class="d-inline-block align-text-top"></img>
-            </a>
-        </div>
-        </nav>
-    </div>
-  )
+    <Container className="d-flex vh-100 align-items-center justify-content-center text-center">
+      <Row>
+        <Col>
+          <h1 className="mb-4">Bienvenido a FERROMAS</h1>
+          <p className="mb-5">Sistema de gestión para bodegas, productos, usuarios y ventas.</p>
+        </Col>
+      </Row>
+    </Container>
+  );
 }
 
-export default home
+export default Home;
