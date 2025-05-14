@@ -19,7 +19,8 @@ def mantenedor_usuario():
             "segundo_nombre": usuario[2],
             "apellido": usuario[3],
             "correo": usuario[4],
-            "telefono": usuario[5]
+            "telefono": usuario[5],
+            "contraseña": usuario[6]
         }
         for usuario in data
     ]
@@ -47,7 +48,8 @@ def obtener_usuario():
             "segundo_nombre": data[2],
             "apellido": data[3],
             "correo": data[4],
-            "telefono": data[5]
+            "telefono": data[5],
+            "contraseña": data[6]
         }
     ]
     response_data = json.dumps({"usuarios": usuarios}, ensure_ascii=False)
@@ -72,8 +74,8 @@ def crear_usuario():
     
     # Ejecutar la consulta SQL de inserción
     cur.execute("""
-        INSERT INTO usuario (p_nombre_usuario, s_nombre_usuario, apellido_usuario, correo_usuario, telefono_usuario)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO usuario (p_nombre_usuario, s_nombre_usuario, apellido_usuario, correo_usuario, telefono_usuario, clave_usuario)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """, (nombre, segundo_nombre, apellido,correo,telefono))
 
     # Confirmar la transacción
@@ -121,6 +123,7 @@ def editar_usuario():
     apellido = request.json.get("apellido")
     correo = request.json.get("correo")
     telefono = request.json.get("telefono")
+    password = request.json.get("password")
     
     # Conexión a la base de datos
     mysql = current_app.extensions["mysql"]
@@ -129,9 +132,9 @@ def editar_usuario():
     # Ejecutar la consulta SQL para actualizar la venta
     cur.execute("""
         UPDATE usuario
-        SET p_nombre_usuario = %s, s_nombre_usuario = %s, apellido_usuario = %s, correo_usuario = %s, telefono_usuario = %s
+        SET p_nombre_usuario = %s, s_nombre_usuario = %s, apellido_usuario = %s, correo_usuario = %s, telefono_usuario = %s, clave_usuario = %s
         WHERE idUsuario = %s
-    """, (nombre, segundo_nombre, apellido, correo, telefono, id))
+    """, (nombre, segundo_nombre, apellido, correo, telefono, password, id))
     
     mysql.connection.commit()
 
