@@ -142,3 +142,33 @@ def editar_venta():
     cur.close()
 
     return jsonify({"mensaje": "Venta actualizada exitosamente"}), 200
+
+
+@Mventa.route("/mantenedor_venta/detalle_productos", methods=["GET"])
+def detalle_productos_venta():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el ID de la venta"}), 400
+
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+    cur.execute("""
+        SELECT p.nombre_producto, p.precio_producto, dv.cantidad
+        FROM detalle_venta dv
+        JOIN producto p ON dv.Producto_idProducto = p.idProducto
+        WHERE dv.Ventas_idVentas = %s
+    """, (id,))
+    data = cur.fetchall()
+    cur.close()
+
+    productos = [
+        {
+            "nombre": row[0],
+            "precio": row[1],
+            "cantidad": row[2],
+            "subtotal": row[1] * row[2]
+        }
+        for row in data
+    ]
+
+    return jsonify({"productos": productos})

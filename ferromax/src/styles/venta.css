@@ -1,0 +1,21 @@
+.venta-box {
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.venta-table-container {
+  overflow-x: auto;
+  min-height: 300px;
+  margin-bottom: 20px;
+}
+
+.venta-table {
+  width: 100%;
+  text-align: center;
+}
+
+.venta-paginacion {
+  margin-top: 10px;
+}

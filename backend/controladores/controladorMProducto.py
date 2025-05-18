@@ -51,32 +51,40 @@ def obtener_producto():
 
 #POST
 
-@Mproducto.route("/mantenedor_producto/crear_producto", methods = ["POST"])
+@Mproducto.route("/mantenedor_producto/crear_producto", methods=["POST"])
 def crear_producto():
     data = request.get_json()
-    
-    # Extraer los valores
-    nombre_producto = data["nombre_producto"]
-    precio_producto = data["precio_producto"]
-    bodega = data["bodega"]
-    
-    # Conectar a la base de datos
+
+    nombre_producto = data.get("nombre_producto")
+    precio_producto = data.get("precio_producto")
+    bodega = data.get("bodega_idBodega")
+
+    if not nombre_producto or not precio_producto or not bodega:
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
+
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    
-    # Ejecutar la consulta SQL de inserción
+
+    # ✅ Comprobar si existe la bodega
+    cur.execute("SELECT idBodega FROM bodega WHERE idBodega = %s", (bodega,))
+    existe_bodega = cur.fetchone()
+
+    # ✅ Si no existe, crear una bodega predeterminada con ese ID
+    if not existe_bodega:
+        cur.execute("""
+            INSERT INTO bodega (idBodega, cantidad_producto, fecha_vencimiento, Estado_producto_idEstado_producto)
+            VALUES (%s, %s, %s, %s)
+        """, (bodega, 0, '2099-12-31', 1))
+
+    # ✅ Insertar producto
     cur.execute("""
         INSERT INTO producto (nombre_producto, precio_producto, bodega_idBodega)
         VALUES (%s, %s, %s)
     """, (nombre_producto, precio_producto, bodega))
 
-    # Confirmar la transacción
     mysql.connection.commit()
-
-    # Cerrar el cursor
     cur.close()
 
-    # Devolver una respuesta de éxito
     return jsonify({"mensaje": "Producto creado exitosamente"}), 201
 
 #DELETE
@@ -102,35 +110,29 @@ def eliminar_producto():
     return jsonify({"mensaje": "Producto eliminado exitosamente"}), 200
 
 #UPDATE
-@Mproducto.route("/mantenedor_producto/editar_producto", methods = ["PUT"])
+@Mproducto.route("/mantenedor_producto/editar_producto", methods=["PUT"])
 def editar_producto():
-    id = request.args.get("id")  # Obtener el ID de la venta desde los parámetros de la consulta
-
+    id = request.args.get("id")
     if not id:
         return jsonify({"error": "Falta el ID del producto"}), 400
-    
-    # Obtener los nuevos valores para la actualización
+
     nombre_producto = request.json.get("nombre_producto")
     precio_producto = request.json.get("precio_producto")
-    bodega = request.json.get("bodega")
-    
-    # Conexión a la base de datos
+    bodega = request.json.get("bodega_idBodega")  # <- CORREGIDO
+
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    
-    # Ejecutar la consulta SQL para actualizar la venta
+
     cur.execute("""
         UPDATE producto
         SET nombre_producto = %s, precio_producto = %s, bodega_idBodega = %s
         WHERE idProducto = %s
     """, (nombre_producto, precio_producto, bodega, id))
-    
+
     mysql.connection.commit()
 
-    # Verificar si la actualización fue exitosa
     if cur.rowcount == 0:
         return jsonify({"error": "Producto no encontrado"}), 404
 
     cur.close()
-
     return jsonify({"mensaje": "Producto actualizado exitosamente"}), 200
