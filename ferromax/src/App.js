@@ -7,7 +7,8 @@ import Usuario from './pages/mantenedor_usuario';
 import Producto from './pages/mantenedor_producto';
 import Ventas from './pages/mantenedor_venta';
 import Bodega from './pages/mantenedor_bodega';
-import './styles/main-content.css'; // si estás en App.js
+import CatalogoCliente from './pages/cliente';
+import './styles/main-content.css';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="producto" element={<Producto />} />
           <Route path="venta" element={<Ventas />} />
           <Route path="bodega" element={<Bodega />} />
+          <Route path="catalogo" element={<CatalogoCliente />} />
         </Route>
       </Routes>
     </Router>

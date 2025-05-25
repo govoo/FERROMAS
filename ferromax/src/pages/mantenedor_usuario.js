@@ -44,7 +44,6 @@ function UsuarioCrud() {
 
   const cargarRoles = async () => {
     const data = await fetchRoles();
-    console.log("✅ Roles cargados:", data);
     setRoles(data || []);
   };
 
