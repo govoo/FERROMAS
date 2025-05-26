@@ -34,16 +34,39 @@ function Transbank() {
     navigate('/catalogo');
   };
 
-  const pagar = () => {
-    alert('¡Gracias por tu compra!');
-    setCarrito([]);
-    localStorage.removeItem('carrito');
-    navigate('/catalogo');
-  };
-
   const cerrarSesion = () => {
     localStorage.removeItem('usuario');
     navigate('/');
+  };
+
+  const pagar = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/pago', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          monto: totalCarrito,
+          usuario: usuario ? usuario.nombre_usuario : 'anon',
+          timestamp: Date.now()
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Respuesta Transbank:', data);
+
+      if (data.url && data.token) {
+        // Vaciar carrito y localStorage
+        setCarrito([]);
+        localStorage.removeItem('carrito');
+        // Redirigir a la URL de pago
+        window.location.href = `${data.url}?token_ws=${data.token}`;
+      } else {
+        alert('Error al iniciar pago. Intenta nuevamente.');
+      }
+    } catch (error) {
+      console.error('Error al procesar pago:', error);
+      alert('Error al conectar con el servidor de pago.');
+    }
   };
 
   return (
@@ -56,7 +79,6 @@ function Transbank() {
 
       <Container className="mt-4">
         <Row>
-          {/* Listado de productos */}
           <Col md={8}>
             <h2 className="mb-4">Carrito de Compras</h2>
 
@@ -85,7 +107,6 @@ function Transbank() {
             )}
           </Col>
 
-          {/* Resumen del pedido */}
           <Col md={4}>
             <Card className="shadow-sm sticky-top">
               <Card.Body>
@@ -96,7 +117,7 @@ function Transbank() {
                   <Button variant="secondary" onClick={seguirComprando}>
                     Seguir comprando
                   </Button>
-                  <Button variant="success" onClick={pagar}>
+                  <Button variant="success" onClick={pagar} disabled={carrito.length === 0}>
                     Pagar
                   </Button>
                 </div>

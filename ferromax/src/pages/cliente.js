@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Container, Spinner, Button, ListGroup } from 'react-bootstrap';
+import { Card, Row, Col, Container, Spinner, Button, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import NavbarCatalogo from '../components/NavbarCliente';
 import '../styles/main-content.css';
@@ -7,8 +7,9 @@ import '../styles/main-content.css';
 function CatalogoCliente() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tipoCambio, setTipoCambio] = useState(null);
+  const [moneda, setMoneda] = useState('USD');
 
-  // Estado del carrito inicial desde localStorage
   const [carrito, setCarrito] = useState(() => {
     const carritoGuardado = localStorage.getItem('carrito');
     return carritoGuardado ? JSON.parse(carritoGuardado) : [];
@@ -17,17 +18,14 @@ function CatalogoCliente() {
   const navigate = useNavigate();
   const usuario = JSON.parse(localStorage.getItem('usuario'));
 
-  // Guardar el carrito en localStorage cada vez que cambie
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(carrito));
   }, [carrito]);
 
-  // Cargar productos desde backend
   const cargarProductos = async () => {
     try {
       const res = await fetch('http://localhost:5000/mantenedor_producto');
       const data = await res.json();
-      console.log('Productos cargados:', data.producto); // Verifica que cada producto sea único
       setProductos(data.producto || []);
     } catch (error) {
       console.error('Error al cargar productos:', error);
@@ -37,9 +35,21 @@ function CatalogoCliente() {
     }
   };
 
+  const cargarTipoCambio = async () => {
+    try {
+      const res = await fetch(`https://api.exchangerate-api.com/v4/latest/CLP`);
+      const data = await res.json();
+      setTipoCambio(data.rates[moneda]);
+    } catch (error) {
+      console.error('Error al cargar tipo de cambio:', error);
+      setTipoCambio(null);
+    }
+  };
+
   useEffect(() => {
     cargarProductos();
-  }, []);
+    cargarTipoCambio();
+  }, [moneda]);
 
   const agregarAlCarrito = (producto) => {
     const existe = carrito.find((p) => p.id === producto.id);
@@ -102,6 +112,22 @@ function CatalogoCliente() {
       />
 
       <Container className="mt-4">
+        {/* Select de moneda antes del título */}
+        <div className="mb-4 text-center">
+          <Form.Label>Selecciona moneda:</Form.Label>
+          <Form.Select
+            value={moneda}
+            onChange={(e) => setMoneda(e.target.value)}
+            style={{ width: '200px', margin: '0 auto' }}
+          >
+            <option value="USD">Dólar (USD)</option>
+            <option value="EUR">Euro (EUR)</option>
+            <option value="CLP">Peso chileno (CLP)</option>
+            <option value="MXN">Peso mexicano (MXN)</option>
+            <option value="BRL">Real brasileño (BRL)</option>
+          </Form.Select>
+        </div>
+
         <h2 className="mb-4 text-center">Catálogo de Productos</h2>
 
         {loading ? (
@@ -134,7 +160,14 @@ function CatalogoCliente() {
                   <Card.Body>
                     <Card.Title>{producto.nombre_producto}</Card.Title>
                     <Card.Text>
-                      <strong>Precio:</strong> ${producto.precio_producto}
+                      <strong>Precio:</strong> ${producto.precio_producto} CLP
+                      {tipoCambio && moneda !== 'CLP' && (
+                        <>
+                          <br />
+                          <strong>{moneda}:</strong>{' '}
+                          {(producto.precio_producto * tipoCambio).toFixed(2)} {moneda}
+                        </>
+                      )}
                     </Card.Text>
                     <Button
                       variant="primary"

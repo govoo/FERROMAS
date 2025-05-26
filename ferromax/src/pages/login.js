@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import CryptoJS from 'crypto-js'; // ¡Asegúrate de tenerlo instalado!
 import '../styles/login.css';
 
 function Login() {
@@ -8,6 +9,8 @@ function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const claveSecreta = 'clave-temporal-frontend'; // ⚠️ ¡NO USAR EN PRODUCCIÓN!
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,21 +22,29 @@ function Login() {
     setLoading(true);
     setError('');
 
+    // Encriptar la contraseña antes de enviarla
+    const passwordCifrada = CryptoJS.AES.encrypt(formData.password, claveSecreta).toString();
+
+    // 👉 Mostrar el texto cifrado en la consola para verificar
+    console.log('Contraseña cifrada:', passwordCifrada);
+
     try {
       const res = await fetch('http://localhost:5000/mantenedor_usuario/login_usuario', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: formData.email,
+          password: passwordCifrada, // Ahora enviamos la contraseña cifrada
+        }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
-        // Guardar datos del usuario en localStorage (opcional)
         localStorage.setItem('usuario', JSON.stringify(data.usuario));
-        navigate('/ferromas/home'); // Redirige a la página protegida
+        navigate('/ferromas/home');
       } else {
         setError(data.message || 'Credenciales inválidas');
       }
