@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Badge, Pagination } from 'react-bootstrap';
+import { Table, Button, Modal, Badge, Pagination, Form } from 'react-bootstrap';
 import '../styles/main-content.css';
 import '../styles/venta.css';
 
 import {
   fetchVentas,
   eliminarVenta,
+  editarVenta,
 } from '../services/ventaService';
 
 function VentasCrud() {
   const [ventas, setVentas] = useState([]);
   const [ventaVer, setVentaVer] = useState(null);
+  const [ventaEditar, setVentaEditar] = useState(null);
   const [ventaPendiente, setVentaPendiente] = useState(null);
   const [showVerModal, setShowVerModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ventasPorPagina = 6;
@@ -38,16 +41,54 @@ function VentasCrud() {
     setShowVerModal(true);
   };
 
+  const handleEditar = venta => {
+    setVentaEditar({ ...venta }); // Copia para edición
+    setShowEditModal(true);
+  };
+
   const handleDelete = venta => {
+    console.log('Venta seleccionada para eliminar:', venta);
     setVentaPendiente(venta);
     setShowConfirmDelete(true);
   };
 
   const confirmarEliminacion = async () => {
-    await eliminarVenta(ventaPendiente.id);
-    setShowConfirmDelete(false);
-    setVentaPendiente(null);
-    cargarVentas();
+    if (!ventaPendiente?.id) {
+      alert('Error: ID de la venta no definido.');
+      return;
+    }
+    console.log('ID de la venta a eliminar:', ventaPendiente.id);
+    try {
+      await eliminarVenta(ventaPendiente.id);
+      setShowConfirmDelete(false);
+      setVentaPendiente(null);
+      cargarVentas();
+    } catch (error) {
+      console.error('Error al eliminar venta:', error);
+      alert('Ocurrió un error al eliminar la venta');
+    }
+  };
+
+  const confirmarEdicion = async () => {
+    if (!ventaEditar?.id) {
+      alert('Error: ID de la venta no definido.');
+      return;
+    }
+    try {
+      const { id, cantidad_productos, fecha_venta, total } = ventaEditar;
+      const datosActualizados = {
+        cantidad_productos,
+        fecha_venta,
+        total
+      };
+      await editarVenta(id, datosActualizados);
+      setShowEditModal(false);
+      setVentaEditar(null);
+      cargarVentas();
+    } catch (error) {
+      console.error('Error al editar venta:', error);
+      alert('Ocurrió un error al editar la venta');
+    }
   };
 
   const badgeColor = (estado) => {
@@ -94,8 +135,7 @@ function VentasCrud() {
                   <td><Badge bg={badgeColor(venta.estado)}>{venta.estado}</Badge></td>
                   <td>
                     <Button variant="info" size="sm" className="me-2" onClick={() => handleVer(venta)}>Ver</Button>
-                    {/* Botón eliminado */}
-                    {/* <Button variant="secondary" size="sm" className="me-2" onClick={() => handleVerDetalle(venta)}>Detalle</Button> */}
+                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditar(venta)}>Modificar</Button>
                     <Button variant="success" size="sm" className="me-2"
                       onClick={() => cambiarEstado(venta.id, 'aprobada')}
                       disabled={venta.estado !== 'pendiente'}>
@@ -148,6 +188,47 @@ function VentasCrud() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowVerModal(false)}>Cerrar</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Editar Venta */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Modificar Venta</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {ventaEditar && (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Cantidad de Productos</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={ventaEditar.cantidad_productos}
+                  onChange={(e) => setVentaEditar({ ...ventaEditar, cantidad_productos: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Fecha de Venta</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={ventaEditar.fecha_venta}
+                  onChange={(e) => setVentaEditar({ ...ventaEditar, fecha_venta: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Total</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={ventaEditar.total}
+                  onChange={(e) => setVentaEditar({ ...ventaEditar, total: e.target.value })}
+                />
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancelar</Button>
+          <Button variant="success" onClick={confirmarEdicion}>Guardar cambios</Button>
         </Modal.Footer>
       </Modal>
 

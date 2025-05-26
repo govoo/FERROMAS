@@ -4,12 +4,12 @@ export async function fetchVentas() {
   const res = await fetch('http://localhost:5000/mantenedor_venta');
   const data = await res.json();
   return data.ventas.map(v => ({
-    id: v.id,
+    id: v.id, // ya viene como id mapeado
     usuario: v.usuario,
     cantidad_productos: v.cantidad_productos,
     fecha_venta: v.fecha_venta,
     total: v.total,
-    estado: 'pendiente' // Puedes ajustar esto si viene desde la base de datos
+    estado: 'pendiente' // Ajusta si viene del backend
   }));
 }
 
@@ -30,9 +30,13 @@ export async function editarVenta(id, venta) {
 }
 
 export async function eliminarVenta(id) {
-  return await fetch(`http://localhost:5000/mantenedor_venta/eliminar_venta?id=${id}`, {
+  const res = await fetch(`http://localhost:5000/mantenedor_venta/eliminar_venta?id=${id}`, {
     method: 'DELETE'
   });
+  if (!res.ok) {
+    throw new Error('No se pudo eliminar la venta');
+  }
+  return await res.json();
 }
 
 export async function fetchDetalleProductos(idVenta) {
@@ -40,4 +44,3 @@ export async function fetchDetalleProductos(idVenta) {
   const data = await res.json();
   return data.productos;
 }
-

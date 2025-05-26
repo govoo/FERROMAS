@@ -92,22 +92,23 @@ def crear_venta():
 def eliminar_venta():
     id = request.args.get("id")
 
-    if not id:
-        return jsonify({"error": "Falta el ID de la venta"}), 400
+    if not id or id == 'undefined':
+        return jsonify({"error": "ID inválido"}), 400
     
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
     
-    cur.execute("DELETE FROM bodega WHERE idBodega = %s", (id,))
+    # Eliminar de la tabla correcta: ventas
+    cur.execute("DELETE FROM ventas WHERE idVentas = %s", (id,))
     
     mysql.connection.commit()
     
     if cur.rowcount == 0:
+        cur.close()
         return jsonify({"error": "Venta no encontrada"}), 404
 
     cur.close()
-
-    return jsonify({"mensaje": "Bodega eliminada exitosamente"}), 200
+    return jsonify({"mensaje": "Venta eliminada exitosamente"}), 200
 
 #UPDATE
 @Mventa.route("/mantenedor_venta/editar_venta", methods = ["PUT"])
