@@ -7,6 +7,7 @@ import {
   fetchVentas,
   eliminarVenta,
   editarVenta,
+  crearVenta,
 } from '../services/ventaService';
 
 function VentasCrud() {
@@ -16,7 +17,14 @@ function VentasCrud() {
   const [ventaPendiente, setVentaPendiente] = useState(null);
   const [showVerModal, setShowVerModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [nuevaVenta, setNuevaVenta] = useState({
+    usuario_id: '',
+    cantidad_productos: '',
+    fecha_venta: '',
+    total: ''
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const ventasPorPagina = 6;
 
@@ -42,22 +50,20 @@ function VentasCrud() {
   };
 
   const handleEditar = venta => {
-    setVentaEditar({ ...venta }); // Copia para edición
+    setVentaEditar({ ...venta });
     setShowEditModal(true);
   };
 
   const handleDelete = venta => {
-    console.log('Venta seleccionada para eliminar:', venta);
     setVentaPendiente(venta);
     setShowConfirmDelete(true);
   };
 
   const confirmarEliminacion = async () => {
     if (!ventaPendiente?.id) {
-      alert('Error: ID de la venta no definido.');
+      alert('Error: ID no definido.');
       return;
     }
-    console.log('ID de la venta a eliminar:', ventaPendiente.id);
     try {
       await eliminarVenta(ventaPendiente.id);
       setShowConfirmDelete(false);
@@ -71,16 +77,12 @@ function VentasCrud() {
 
   const confirmarEdicion = async () => {
     if (!ventaEditar?.id) {
-      alert('Error: ID de la venta no definido.');
+      alert('Error: ID no definido.');
       return;
     }
     try {
       const { id, cantidad_productos, fecha_venta, total } = ventaEditar;
-      const datosActualizados = {
-        cantidad_productos,
-        fecha_venta,
-        total
-      };
+      const datosActualizados = { cantidad_productos, fecha_venta, total };
       await editarVenta(id, datosActualizados);
       setShowEditModal(false);
       setVentaEditar(null);
@@ -88,6 +90,27 @@ function VentasCrud() {
     } catch (error) {
       console.error('Error al editar venta:', error);
       alert('Ocurrió un error al editar la venta');
+    }
+  };
+
+  const confirmarAgregarVenta = async () => {
+    try {
+      if (!nuevaVenta.usuario_id || !nuevaVenta.cantidad_productos || !nuevaVenta.fecha_venta || !nuevaVenta.total) {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
+      await crearVenta(nuevaVenta);
+      setShowAddModal(false);
+      setNuevaVenta({
+        usuario_id: '',
+        cantidad_productos: '',
+        fecha_venta: '',
+        total: ''
+      });
+      cargarVentas();
+    } catch (error) {
+      console.error('Error al crear venta:', error);
+      alert('Ocurrió un error al crear la venta');
     }
   };
 
@@ -109,6 +132,7 @@ function VentasCrud() {
       <div className="venta-box">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h3>Gestión de Ventas</h3>
+          <Button variant="outline-primary" onClick={() => setShowAddModal(true)}>+ Agregar Venta</Button>
         </div>
 
         <div className="venta-table-container">
@@ -169,7 +193,7 @@ function VentasCrud() {
         </div>
       </div>
 
-      {/* Modal Ver Venta */}
+      {/* Modal Ver */}
       <Modal show={showVerModal} onHide={() => setShowVerModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Detalle de Venta</Modal.Title>
@@ -191,7 +215,7 @@ function VentasCrud() {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Editar Venta */}
+      {/* Modal Editar */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Modificar Venta</Modal.Title>
@@ -200,7 +224,7 @@ function VentasCrud() {
           {ventaEditar && (
             <Form>
               <Form.Group className="mb-3">
-                <Form.Label>Cantidad de Productos</Form.Label>
+                <Form.Label>Cantidad</Form.Label>
                 <Form.Control
                   type="number"
                   value={ventaEditar.cantidad_productos}
@@ -208,7 +232,7 @@ function VentasCrud() {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Fecha de Venta</Form.Label>
+                <Form.Label>Fecha</Form.Label>
                 <Form.Control
                   type="date"
                   value={ventaEditar.fecha_venta}
@@ -228,7 +252,55 @@ function VentasCrud() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancelar</Button>
-          <Button variant="success" onClick={confirmarEdicion}>Guardar cambios</Button>
+          <Button variant="success" onClick={confirmarEdicion}>Guardar</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Agregar */}
+      <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Agregar Nueva Venta</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>ID Usuario</Form.Label>
+              <Form.Control
+                type="number"
+                value={nuevaVenta.usuario_id}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, usuario_id: e.target.value })}
+                placeholder="ID del usuario"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Cantidad de Productos</Form.Label>
+              <Form.Control
+                type="number"
+                value={nuevaVenta.cantidad_productos}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, cantidad_productos: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Fecha de Venta</Form.Label>
+              <Form.Control
+                type="date"
+                value={nuevaVenta.fecha_venta}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, fecha_venta: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Total</Form.Label>
+              <Form.Control
+                type="number"
+                value={nuevaVenta.total}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, total: e.target.value })}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAddModal(false)}>Cancelar</Button>
+          <Button variant="primary" onClick={confirmarAgregarVenta}>Agregar</Button>
         </Modal.Footer>
       </Modal>
 
