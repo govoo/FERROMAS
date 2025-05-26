@@ -1,8 +1,7 @@
-from flask import Flask, Response, request, jsonify, render_template_string
+from flask import Flask, Response, request, jsonify, render_template_string, current_app
 from controladores import home_bp, Musuario, Mproducto, Mventa, Mbodega
 from flask_mysqldb import MySQL
 from flask_cors import CORS
-import json
 from transbank.webpay.webpay_plus.transaction import Transaction
 from transbank.common.integration_type import IntegrationType
 from transbank.common.options import WebpayOptions
@@ -19,9 +18,9 @@ CORS(app)
 mysql = MySQL(app)
 app.extensions["mysql"] = mysql
 
-# Configuración de Transbank para TESTING
-commerce_code = '597055555532'  # Código de comercio
-api_key = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'  # Api Key secreta
+# Configuración de Transbank
+commerce_code = '597055555532'
+api_key = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'
 integration_type = IntegrationType.TEST
 
 options = WebpayOptions(commerce_code, api_key, integration_type)
@@ -73,7 +72,7 @@ def retorno():
     except Exception as e:
         print("Error al procesar el pago:", e)
         return "Error al procesar el pago"
-    
+
 @app.route('/redireccionar_pago/<token>', methods=['GET'])
 def redireccionar_pago(token):
     html = f'''
