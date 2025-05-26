@@ -6,16 +6,13 @@ import '../styles/venta.css';
 import {
   fetchVentas,
   eliminarVenta,
-  fetchDetalleProductos
 } from '../services/ventaService';
 
 function VentasCrud() {
   const [ventas, setVentas] = useState([]);
   const [ventaVer, setVentaVer] = useState(null);
   const [ventaPendiente, setVentaPendiente] = useState(null);
-  const [detalleProductos, setDetalleProductos] = useState([]);
   const [showVerModal, setShowVerModal] = useState(false);
-  const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ventasPorPagina = 6;
@@ -39,12 +36,6 @@ function VentasCrud() {
   const handleVer = venta => {
     setVentaVer(venta);
     setShowVerModal(true);
-  };
-
-  const handleVerDetalle = async (venta) => {
-    const productos = await fetchDetalleProductos(venta.id);
-    setDetalleProductos(productos);
-    setShowDetalleModal(true);
   };
 
   const handleDelete = venta => {
@@ -103,7 +94,8 @@ function VentasCrud() {
                   <td><Badge bg={badgeColor(venta.estado)}>{venta.estado}</Badge></td>
                   <td>
                     <Button variant="info" size="sm" className="me-2" onClick={() => handleVer(venta)}>Ver</Button>
-                    <Button variant="secondary" size="sm" className="me-2" onClick={() => handleVerDetalle(venta)}>Detalle</Button>
+                    {/* Botón eliminado */}
+                    {/* <Button variant="secondary" size="sm" className="me-2" onClick={() => handleVerDetalle(venta)}>Detalle</Button> */}
                     <Button variant="success" size="sm" className="me-2"
                       onClick={() => cambiarEstado(venta.id, 'aprobada')}
                       disabled={venta.estado !== 'pendiente'}>
@@ -159,42 +151,6 @@ function VentasCrud() {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Ver Detalle Productos */}
-      <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Productos en la Venta</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {detalleProductos.length > 0 ? (
-            <Table bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Precio</th>
-                  <th>Cantidad</th>
-                  <th>Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detalleProductos.map((p, idx) => (
-                  <tr key={idx}>
-                    <td>{p.nombre}</td>
-                    <td>${p.precio.toLocaleString()}</td>
-                    <td>{p.cantidad}</td>
-                    <td>${p.subtotal.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          ) : (
-            <p>No hay productos en esta venta.</p>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>Cerrar</Button>
-        </Modal.Footer>
-      </Modal>
-
       {/* Modal Confirmar Eliminación */}
       <Modal show={showConfirmDelete} onHide={() => setShowConfirmDelete(false)} backdrop="static">
         <Modal.Header closeButton>
@@ -211,4 +167,3 @@ function VentasCrud() {
 }
 
 export default VentasCrud;
-  
