@@ -25,7 +25,7 @@ function App() {
         </Route>
         <Route path="/catalogo" element={<CatalogoCliente />} />
         <Route path="/transbank" element={<Transbank />} />
-      </Routes>
+        </Routes>
     </Router>
   );
 }

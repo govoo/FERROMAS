@@ -14,7 +14,7 @@ def mantenedor_usuario():
         SELECT u.idUsuario, u.p_nombre_usuario, u.s_nombre_usuario, u.apellido_usuario,
                u.correo_usuario, u.telefono_usuario, u.clave_usuario, u.rol_id, r.nombre_rol
         FROM usuario u
-        JOIN rol_usuario r ON u.rol_id = r.idRol_usuario
+        LEFT JOIN rol_usuario r ON u.rol_id = r.idRol_usuario
     """)
     data = cur.fetchall()
     cur.close()
