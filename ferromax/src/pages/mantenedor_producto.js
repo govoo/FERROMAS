@@ -71,7 +71,11 @@ function ProductoCrud() {
   const handleEdit = index => {
     const globalIndex = (currentPage - 1) * productosPorPagina + index;
     const producto = productos[globalIndex];
-    setFormData(producto);
+    setFormData({
+      nombre_producto: producto.nombre_producto,
+      precio_producto: producto.precio_producto,
+      bodega_idBodega: producto.bodega_idBodega
+    });
     setEditIndex(globalIndex);
     setShowModal(true);
   };
@@ -196,13 +200,19 @@ function ProductoCrud() {
             </Form.Group>
             <Form.Group>
               <Form.Label>ID de Bodega</Form.Label>
-              <Form.Control
+              <Form.Select
                 name="bodega_idBodega"
-                type="number"
                 value={formData.bodega_idBodega}
                 onChange={handleChange}
-                disabled
-              />
+                required
+              >
+                <option value="">Selecciona una bodega</option>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>

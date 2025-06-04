@@ -1,6 +1,5 @@
-from flask import Blueprint, current_app, Response, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from flask_cors import CORS
-import json
 
 Musuario = Blueprint("usuario", __name__)
 CORS(Musuario)
@@ -97,3 +96,32 @@ def eliminar_usuario():
     mysql.connection.commit()
     cur.close()
     return jsonify({"mensaje": "Usuario eliminado"}), 200
+
+# 🔥 Endpoint para login de usuario
+@Musuario.route("/mantenedor_usuario/login_usuario", methods=["POST"])
+def login_usuario():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"error": "Faltan datos"}), 400
+
+    mysql = current_app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+    cur.execute(
+        "SELECT idUsuario, p_nombre_usuario, correo_usuario FROM usuario WHERE correo_usuario = %s AND clave_usuario = %s",
+        (email, password)
+    )
+    usuario = cur.fetchone()
+    cur.close()
+
+    if usuario:
+        user_data = {
+            "id": usuario[0],
+            "nombre": usuario[1],
+            "correo": usuario[2]
+        }
+        return jsonify({"success": True, "usuario": user_data})
+    else:
+        return jsonify({"success": False, "message": "Credenciales inválidas"}), 401

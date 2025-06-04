@@ -1,8 +1,7 @@
-from flask import Flask, Response, request, jsonify, render_template_string
+from flask import Flask, Response, request, jsonify, render_template_string, current_app
 from controladores import home_bp, Musuario, Mproducto, Mventa, Mbodega
 from flask_mysqldb import MySQL
 from flask_cors import CORS
-import json
 from transbank.webpay.webpay_plus.transaction import Transaction
 from transbank.common.integration_type import IntegrationType
 from transbank.common.options import WebpayOptions
@@ -19,9 +18,9 @@ CORS(app)
 mysql = MySQL(app)
 app.extensions["mysql"] = mysql
 
-# Configuración de Transbank para TESTING
-commerce_code = '597055555532'  # Código de comercio
-api_key = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'  # Api Key secreta
+# Configuración de Transbank
+commerce_code = '597055555532'
+api_key = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'
 integration_type = IntegrationType.TEST
 
 options = WebpayOptions(commerce_code, api_key, integration_type)
@@ -65,15 +64,31 @@ def retorno():
     try:
         response = tx.commit(token_ws)
         print("Respuesta commit:", response)
+        
         if response['status'] == 'AUTHORIZED':
+            # 💡 Aseguramos que el pago se guardará en la base de datos
+            mysql = current_app.extensions["mysql"]
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                INSERT INTO ventas (Usuario_idUsuario, cantidad_productos, fecha_venta, total)
+                VALUES (%s, %s, NOW(), %s)
+            """, (1, 1, response['amount']))  # 🚨 Aquí asignamos Usuario_idUsuario = 1, cantidad_productos = 1
+            mysql.connection.commit()
+            cur.close()
+            print("Venta guardada correctamente.")
+
+            # 🎉 HTML de respuesta
             html = f"<h1>✅ Pago exitoso</h1><p>Monto: {response['amount']}</p>"
         else:
             html = "<h1>❌ Pago no autorizado</h1>"
         return render_template_string(html)
+
     except Exception as e:
         print("Error al procesar el pago:", e)
         return "Error al procesar el pago"
-    
+
+
+
 @app.route('/redireccionar_pago/<token>', methods=['GET'])
 def redireccionar_pago(token):
     html = f'''
@@ -96,6 +111,50 @@ def redireccionar_pago(token):
     </html>
     '''
     return html
+
+
+def obtener_usuario_id_por_session(session_id):
+    # Este ejemplo usa el correo como session_id
+    mysql = app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT idUsuario FROM usuario WHERE correo_usuario = %s", (session_id,))
+    data = cur.fetchone()
+    cur.close()
+    if data:
+        return data[0]
+    return None
+
+def obtener_carrito(usuario_id):
+    # Ejemplo: obtener cantidad de productos desde tu lógica o base de datos temporal
+    # Aquí supongamos que lo guardaste en una tabla `carrito` (tendrías que implementarlo).
+    # Para este ejemplo simple, retorno datos de prueba.
+    cantidad_productos = 3
+    productos = [
+        {"id": 1, "cantidad": 1, "precio": 1000},
+        {"id": 2, "cantidad": 2, "precio": 2000}
+    ]
+    return cantidad_productos, productos
+
+def guardar_venta(usuario_id, cantidad_productos, total, productos):
+    mysql = app.extensions["mysql"]
+    cur = mysql.connection.cursor()
+
+    # 1️⃣ Insertar la venta
+    cur.execute("""
+        INSERT INTO ventas (Usuario_idUsuario, cantidad_productos, fecha_venta, total)
+        VALUES (%s, %s, NOW(), %s)
+    """, (usuario_id, cantidad_productos, total))
+    venta_id = cur.lastrowid
+
+    # 2️⃣ Insertar los productos vendidos en tabla `detalle_venta` (si la tienes)
+    for producto in productos:
+        cur.execute("""
+            INSERT INTO detalle_venta (Ventas_idVentas, Producto_idProducto, cantidad)
+            VALUES (%s, %s, %s)
+        """, (venta_id, producto["id"], producto["cantidad"]))
+
+    mysql.connection.commit()
+    cur.close()
 
 # Blueprints
 app.register_blueprint(home_bp)

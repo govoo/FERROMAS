@@ -1,22 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Badge, Pagination } from 'react-bootstrap';
+import { Table, Button, Modal, Badge, Pagination, Form } from 'react-bootstrap';
 import '../styles/main-content.css';
 import '../styles/venta.css';
 
 import {
   fetchVentas,
   eliminarVenta,
-  fetchDetalleProductos
+  editarVenta,
+  crearVenta,
 } from '../services/ventaService';
 
 function VentasCrud() {
   const [ventas, setVentas] = useState([]);
   const [ventaVer, setVentaVer] = useState(null);
+  const [ventaEditar, setVentaEditar] = useState(null);
   const [ventaPendiente, setVentaPendiente] = useState(null);
-  const [detalleProductos, setDetalleProductos] = useState([]);
   const [showVerModal, setShowVerModal] = useState(false);
-  const [showDetalleModal, setShowDetalleModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [nuevaVenta, setNuevaVenta] = useState({
+    usuario_id: '',
+    cantidad_productos: '',
+    fecha_venta: '',
+    total: ''
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const ventasPorPagina = 6;
 
@@ -41,10 +49,9 @@ function VentasCrud() {
     setShowVerModal(true);
   };
 
-  const handleVerDetalle = async (venta) => {
-    const productos = await fetchDetalleProductos(venta.id);
-    setDetalleProductos(productos);
-    setShowDetalleModal(true);
+  const handleEditar = venta => {
+    setVentaEditar({ ...venta });
+    setShowEditModal(true);
   };
 
   const handleDelete = venta => {
@@ -53,10 +60,58 @@ function VentasCrud() {
   };
 
   const confirmarEliminacion = async () => {
-    await eliminarVenta(ventaPendiente.id);
-    setShowConfirmDelete(false);
-    setVentaPendiente(null);
-    cargarVentas();
+    if (!ventaPendiente?.id) {
+      alert('Error: ID no definido.');
+      return;
+    }
+    try {
+      await eliminarVenta(ventaPendiente.id);
+      setShowConfirmDelete(false);
+      setVentaPendiente(null);
+      cargarVentas();
+    } catch (error) {
+      console.error('Error al eliminar venta:', error);
+      alert('Ocurrió un error al eliminar la venta');
+    }
+  };
+
+  const confirmarEdicion = async () => {
+    if (!ventaEditar?.id) {
+      alert('Error: ID no definido.');
+      return;
+    }
+    try {
+      const { id, cantidad_productos, fecha_venta, total } = ventaEditar;
+      const datosActualizados = { cantidad_productos, fecha_venta, total };
+      await editarVenta(id, datosActualizados);
+      setShowEditModal(false);
+      setVentaEditar(null);
+      cargarVentas();
+    } catch (error) {
+      console.error('Error al editar venta:', error);
+      alert('Ocurrió un error al editar la venta');
+    }
+  };
+
+  const confirmarAgregarVenta = async () => {
+    try {
+      if (!nuevaVenta.usuario_id || !nuevaVenta.cantidad_productos || !nuevaVenta.fecha_venta || !nuevaVenta.total) {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
+      await crearVenta(nuevaVenta);
+      setShowAddModal(false);
+      setNuevaVenta({
+        usuario_id: '',
+        cantidad_productos: '',
+        fecha_venta: '',
+        total: ''
+      });
+      cargarVentas();
+    } catch (error) {
+      console.error('Error al crear venta:', error);
+      alert('Ocurrió un error al crear la venta');
+    }
   };
 
   const badgeColor = (estado) => {
@@ -77,6 +132,7 @@ function VentasCrud() {
       <div className="venta-box">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h3>Gestión de Ventas</h3>
+          <Button variant="outline-primary" onClick={() => setShowAddModal(true)}>+ Agregar Venta</Button>
         </div>
 
         <div className="venta-table-container">
@@ -103,7 +159,7 @@ function VentasCrud() {
                   <td><Badge bg={badgeColor(venta.estado)}>{venta.estado}</Badge></td>
                   <td>
                     <Button variant="info" size="sm" className="me-2" onClick={() => handleVer(venta)}>Ver</Button>
-                    <Button variant="secondary" size="sm" className="me-2" onClick={() => handleVerDetalle(venta)}>Detalle</Button>
+                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditar(venta)}>Modificar</Button>
                     <Button variant="success" size="sm" className="me-2"
                       onClick={() => cambiarEstado(venta.id, 'aprobada')}
                       disabled={venta.estado !== 'pendiente'}>
@@ -137,7 +193,7 @@ function VentasCrud() {
         </div>
       </div>
 
-      {/* Modal Ver Venta */}
+      {/* Modal Ver */}
       <Modal show={showVerModal} onHide={() => setShowVerModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Detalle de Venta</Modal.Title>
@@ -159,39 +215,92 @@ function VentasCrud() {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Ver Detalle Productos */}
-      <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)} size="lg">
+      {/* Modal Editar */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Productos en la Venta</Modal.Title>
+          <Modal.Title>Modificar Venta</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {detalleProductos.length > 0 ? (
-            <Table bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Precio</th>
-                  <th>Cantidad</th>
-                  <th>Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detalleProductos.map((p, idx) => (
-                  <tr key={idx}>
-                    <td>{p.nombre}</td>
-                    <td>${p.precio.toLocaleString()}</td>
-                    <td>{p.cantidad}</td>
-                    <td>${p.subtotal.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          ) : (
-            <p>No hay productos en esta venta.</p>
+          {ventaEditar && (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Cantidad</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={ventaEditar.cantidad_productos}
+                  onChange={(e) => setVentaEditar({ ...ventaEditar, cantidad_productos: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Fecha</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={ventaEditar.fecha_venta}
+                  onChange={(e) => setVentaEditar({ ...ventaEditar, fecha_venta: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Total</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={ventaEditar.total}
+                  onChange={(e) => setVentaEditar({ ...ventaEditar, total: e.target.value })}
+                />
+              </Form.Group>
+            </Form>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>Cerrar</Button>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancelar</Button>
+          <Button variant="success" onClick={confirmarEdicion}>Guardar</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Agregar */}
+      <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Agregar Nueva Venta</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>ID Usuario</Form.Label>
+              <Form.Control
+                type="number"
+                value={nuevaVenta.usuario_id}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, usuario_id: e.target.value })}
+                placeholder="ID del usuario"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Cantidad de Productos</Form.Label>
+              <Form.Control
+                type="number"
+                value={nuevaVenta.cantidad_productos}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, cantidad_productos: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Fecha de Venta</Form.Label>
+              <Form.Control
+                type="date"
+                value={nuevaVenta.fecha_venta}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, fecha_venta: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Total</Form.Label>
+              <Form.Control
+                type="number"
+                value={nuevaVenta.total}
+                onChange={(e) => setNuevaVenta({ ...nuevaVenta, total: e.target.value })}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAddModal(false)}>Cancelar</Button>
+          <Button variant="primary" onClick={confirmarAgregarVenta}>Agregar</Button>
         </Modal.Footer>
       </Modal>
 
@@ -211,4 +320,3 @@ function VentasCrud() {
 }
 
 export default VentasCrud;
-  
