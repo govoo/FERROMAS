@@ -63,14 +63,20 @@ def crear_bodega():
 
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    cur.execute("""
-        INSERT INTO bodega (cantidad_producto, fecha_vencimiento, Estado_producto_idEstado_producto)
-        VALUES (%s, %s, %s)
-    """, (cantidad_productos, fecha_vencimiento, estado_producto))
-    mysql.connection.commit()
-    cur.close()
+    if not isinstance(cantidad_productos,int) or not isinstance(estado_producto,int):
+        return jsonify({"mensaje": "Datos mal ingresados"}), 400
+    else:
+        try:
+            cur.execute("""
+                INSERT INTO bodega (cantidad_producto, fecha_vencimiento, Estado_producto_idEstado_producto)
+                VALUES (%s, %s, %s)
+            """, (cantidad_productos, fecha_vencimiento, estado_producto))
+            mysql.connection.commit()
+            cur.close()
 
-    return jsonify({"mensaje": "Bodega creada exitosamente"}), 201
+            return jsonify({"mensaje": "Bodega creada exitosamente"}), 201
+        except(Exception):
+            return jsonify({"mensaje": "Error al ingresar datos"}), 400
 
 @Mbodega.route("/mantenedor_bodega/eliminar_bodega", methods=["DELETE"])
 def eliminar_bodega():
@@ -82,6 +88,10 @@ def eliminar_bodega():
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM bodega WHERE idBodega = %s", (id,))
     mysql.connection.commit()
+    
+    if cur.rowcount == 0:
+        return jsonify({"error": "bodega no encontrada"}), 404
+    
     cur.close()
 
     return jsonify({"mensaje": "Bodega eliminada exitosamente"}), 200
@@ -98,12 +108,18 @@ def editar_bodega():
 
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    cur.execute("""
-        UPDATE bodega
-        SET cantidad_producto = %s, fecha_vencimiento = %s, Estado_producto_idEstado_producto = %s
-        WHERE idBodega = %s
-    """, (cantidad_productos, fecha_vencimiento, estado_producto, id))
-    mysql.connection.commit()
-    cur.close()
+    if not isinstance(cantidad_productos,int) or not isinstance(estado_producto,int):
+        return jsonify({"mensaje": "Datos mal ingresados"}), 400
+    else:
+        try:
+            cur.execute("""
+                UPDATE bodega
+                SET cantidad_producto = %s, fecha_vencimiento = %s, Estado_producto_idEstado_producto = %s
+                WHERE idBodega = %s
+            """, (cantidad_productos, fecha_vencimiento, estado_producto, id))
+            mysql.connection.commit()
+            cur.close()
 
-    return jsonify({"mensaje": "Bodega actualizada exitosamente"}), 200
+            return jsonify({"mensaje": "Bodega actualizada exitosamente"}), 200
+        except(Exception):
+            return jsonify({"mensaje": "Error al actualizar bodega"}), 400

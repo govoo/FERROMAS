@@ -8,6 +8,7 @@ import Ventas from './pages/mantenedor_venta';
 import Bodega from './pages/mantenedor_bodega';
 import CatalogoCliente from './pages/cliente';
 import Transbank from './pages/transbank';
+import RetornoPage from './pages/retornoPage';
 import './styles/main-content.css';
 
 function App() {
@@ -25,7 +26,9 @@ function App() {
         </Route>
         <Route path="/catalogo" element={<CatalogoCliente />} />
         <Route path="/transbank" element={<Transbank />} />
-        </Routes>
+        <Route path="/retorno" element={<RetornoPage />} />
+      </Routes>
+
     </Router>
   );
 }
