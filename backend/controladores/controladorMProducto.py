@@ -59,26 +59,33 @@ def crear_producto():
     precio_producto = data.get("precio_producto")
     bodega = data.get("bodega_idBodega")
 
-    # if not nombre_producto or not precio_producto or not bodega:
-    #     return jsonify({"error": "Faltan datos obligatorios"}), 400
+    if not nombre_producto or not precio_producto or not bodega:
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
 
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    
-    if not isinstance(bodega,int) or not isinstance(nombre_producto,str) or not isinstance(precio_producto, int):
-        return jsonify({"mensaje": "Datos mal ingresados"}), 400
-    else:
-        try:
-            cur.execute("""
-                INSERT INTO producto (nombre_producto, precio_producto, bodega_idBodega)
-                VALUES (%s, %s, %s)
-            """, (nombre_producto, precio_producto, bodega))
-            mysql.connection.commit()
-            cur.close()
 
-            return jsonify({"mensaje": "Producto creado exitosamente"}), 201
-        except(Exception):
-            return jsonify({"mensaje": "Bodega no existe"}), 400
+    # ✅ Comprobar si existe la bodega
+    cur.execute("SELECT idBodega FROM bodega WHERE idBodega = %s", (bodega,))
+    existe_bodega = cur.fetchone()
+
+    # ✅ Si no existe, crear una bodega predeterminada con ese ID
+    if not existe_bodega:
+        cur.execute("""
+            INSERT INTO bodega (idBodega, cantidad_producto, fecha_vencimiento, Estado_producto_idEstado_producto)
+            VALUES (%s, %s, %s, %s)
+        """, (bodega, 0, '2099-12-31', 1))
+
+    # ✅ Insertar producto
+    cur.execute("""
+        INSERT INTO producto (nombre_producto, precio_producto, bodega_idBodega)
+        VALUES (%s, %s, %s)
+    """, (nombre_producto, precio_producto, bodega))
+
+    mysql.connection.commit()
+    cur.close()
+
+    return jsonify({"mensaje": "Producto creado exitosamente"}), 201
 
 #DELETE
 @Mproducto.route("/mantenedor_producto/eliminar_producto", methods = ["DELETE"])
@@ -116,22 +123,16 @@ def editar_producto():
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
 
-    if not isinstance(bodega,int) or not isinstance(nombre_producto,str) or not isinstance(precio_producto, int):
-        return jsonify({"mensaje": "Datos mal ingresados"}), 400
-    else:
-        try:
-            cur.execute("""
-                UPDATE producto
-                SET nombre_producto = %s, precio_producto = %s, bodega_idBodega = %s
-                WHERE idProducto = %s
-            """, (nombre_producto, precio_producto, bodega, id))
+    cur.execute("""
+        UPDATE producto
+        SET nombre_producto = %s, precio_producto = %s, bodega_idBodega = %s
+        WHERE idProducto = %s
+    """, (nombre_producto, precio_producto, bodega, id))
 
-            mysql.connection.commit()
-            
-            if cur.rowcount == 0:
-                return jsonify({"error": "Producto no encontrado"}), 404
-            
-            cur.close()
-            return jsonify({"mensaje": "Producto actualizado exitosamente"}), 200
-        except(Exception):
-            return jsonify({"mensaje": "Bodega no existe"}), 400
+    mysql.connection.commit()
+
+    if cur.rowcount == 0:
+        return jsonify({"error": "Producto no encontrado"}), 404
+
+    cur.close()
+    return jsonify({"mensaje": "Producto actualizado exitosamente"}), 200

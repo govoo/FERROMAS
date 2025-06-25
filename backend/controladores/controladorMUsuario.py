@@ -13,7 +13,7 @@ def mantenedor_usuario():
         SELECT u.idUsuario, u.p_nombre_usuario, u.s_nombre_usuario, u.apellido_usuario,
                u.correo_usuario, u.telefono_usuario, u.clave_usuario, u.rol_id, r.nombre_rol
         FROM usuario u
-        LEFT JOIN rol_usuario r ON u.rol_id = r.idRol_usuario
+        JOIN rol_usuario r ON u.rol_id = r.idRol_usuario
     """)
     data = cur.fetchall()
     cur.close()
@@ -50,25 +50,18 @@ def crear_usuario():
     data = request.get_json()
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    
-    if not isinstance(data["nombre"],str) or not isinstance(data["segundo_nombre"],str) or not isinstance(data["apellido"],str) or not isinstance(data["correo"],str) or not isinstance(data["telefono"],int) or not isinstance(data["contrasena"],str) or not isinstance(data["rol_id"],int):
-        return jsonify({"mensaje": "Datos mal ingresados"}), 400
-    else:
-        try:
-            cur.execute("""
-                INSERT INTO usuario (p_nombre_usuario, s_nombre_usuario, apellido_usuario,
-                                    correo_usuario, telefono_usuario, clave_usuario, rol_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (
-                data["nombre"], data["segundo_nombre"], data["apellido"],
-                data["correo"], data["telefono"], data["contrasena"],
-                data["rol_id"]
-            ))
-            mysql.connection.commit()
-            cur.close()
-            return jsonify({"mensaje": "Usuario creado exitosamente"}), 201
-        except(Exception):
-            return jsonify({"mensaje": "Datos mal ingresados"}), 400
+    cur.execute("""
+        INSERT INTO usuario (p_nombre_usuario, s_nombre_usuario, apellido_usuario,
+                             correo_usuario, telefono_usuario, clave_usuario, rol_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (
+        data["nombre"], data["segundo_nombre"], data["apellido"],
+        data["correo"], data["telefono"], data["contrasena"],
+        data["rol_id"]
+    ))
+    mysql.connection.commit()
+    cur.close()
+    return jsonify({"mensaje": "Usuario creado exitosamente"}), 201
 
 # Editar usuario
 @Musuario.route("/mantenedor_usuario/editar_usuario", methods=["PUT"])
@@ -80,28 +73,18 @@ def editar_usuario():
     data = request.get_json()
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    if not isinstance(data["nombre"],str) or not isinstance(data["segundo_nombre"],str) or not isinstance(data["apellido"],str) or not isinstance(data["correo"],str) or not isinstance(data["telefono"],int) or not isinstance(data["contrasena"],str) or not isinstance(data["rol_id"],int):
-        return jsonify({"mensaje": "Datos mal ingresados"}), 400
-    else:
-        try:
-            cur.execute("""
-                UPDATE usuario SET p_nombre_usuario = %s, s_nombre_usuario = %s,
-                apellido_usuario = %s, correo_usuario = %s, telefono_usuario = %s,
-                clave_usuario = %s, rol_id = %s WHERE idUsuario = %s
-            """, (
-                data["nombre"], data["segundo_nombre"], data["apellido"],
-                data["correo"], data["telefono"], data["contrasena"],
-                data["rol_id"], id
-            ))
-            mysql.connection.commit()
-            
-            if cur.rowcount == 0:
-                return jsonify({"error": "Usuario no encontrado"}), 404
-            
-            cur.close()
-            return jsonify({"mensaje": "Usuario actualizado"}), 200
-        except(Exception):
-            return jsonify({"mensaje": "Datos mal ingresados"}), 400
+    cur.execute("""
+        UPDATE usuario SET p_nombre_usuario = %s, s_nombre_usuario = %s,
+        apellido_usuario = %s, correo_usuario = %s, telefono_usuario = %s,
+        clave_usuario = %s, rol_id = %s WHERE idUsuario = %s
+    """, (
+        data["nombre"], data["segundo_nombre"], data["apellido"],
+        data["correo"], data["telefono"], data["contrasena"],
+        data["rol_id"], id
+    ))
+    mysql.connection.commit()
+    cur.close()
+    return jsonify({"mensaje": "Usuario actualizado"}), 200
 
 # Eliminar usuario
 @Musuario.route("/mantenedor_usuario/eliminar_usuario", methods=["DELETE"])
@@ -111,10 +94,6 @@ def eliminar_usuario():
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM usuario WHERE idUsuario = %s", (id,))
     mysql.connection.commit()
-    
-    if cur.rowcount == 0:
-        return jsonify({"error": "Usuario no encontrado"}), 404
-    
     cur.close()
     return jsonify({"mensaje": "Usuario eliminado"}), 200
 

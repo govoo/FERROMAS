@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, Response, request, jsonify
 import json
-from datetime import datetime
+
 Mventa = Blueprint("venta",__name__)
 
 @Mventa.route("/mantenedor_venta")
@@ -71,28 +71,21 @@ def crear_venta():
     # Conectar a la base de datos
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    fecha_hoy = datetime.now().date()
-    fecha_venta_date = datetime.strptime(fecha_venta, "%Y-%m-%d").date()
-    if not isinstance(usuario_id,int) or not isinstance(cantidad_productos,int) or fecha_venta_date < fecha_hoy or not isinstance(total,int):
-        return jsonify({"error": "Datos mal ingresados"}), 400
-    else:
-        try:
-            # Ejecutar la consulta SQL de inserción
-            cur.execute("""
-                INSERT INTO ventas (Usuario_idUsuario, cantidad_productos, fecha_venta, total)
-                VALUES (%s, %s, %s, %s)
-            """, (usuario_id, cantidad_productos, fecha_venta, total))
+    
+    # Ejecutar la consulta SQL de inserción
+    cur.execute("""
+        INSERT INTO ventas (Usuario_idUsuario, cantidad_productos, fecha_venta, total)
+        VALUES (%s, %s, %s, %s)
+    """, (usuario_id, cantidad_productos, fecha_venta, total))
 
-            # Confirmar la transacción
-            mysql.connection.commit()
+    # Confirmar la transacción
+    mysql.connection.commit()
 
-            # Cerrar el cursor
-            cur.close()
+    # Cerrar el cursor
+    cur.close()
 
-            # Devolver una respuesta de éxito
-            return jsonify({"mensaje": "Venta creada exitosamente"}), 201
-        except(Exception):
-            return jsonify({"error": "Error al insertar datos"}), 400
+    # Devolver una respuesta de éxito
+    return jsonify({"mensaje": "Venta creada exitosamente"}), 201
 
 #DELETE
 @Mventa.route("/mantenedor_venta/eliminar_venta", methods = ["DELETE"])
@@ -133,28 +126,23 @@ def editar_venta():
     # Conexión a la base de datos
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    if not isinstance(cantidad_productos,int) or not isinstance(total,int):
-        return jsonify({"error": "Datos mal ingresados"}), 400
-    else:
-        try:
-            # Ejecutar la consulta SQL para actualizar la venta
-            cur.execute("""
-                UPDATE ventas
-                SET cantidad_productos = %s, fecha_venta = %s, total = %s
-                WHERE idVentas = %s
-            """, (cantidad_productos, fecha_venta, total, id))
-            
-            mysql.connection.commit()
+    
+    # Ejecutar la consulta SQL para actualizar la venta
+    cur.execute("""
+        UPDATE ventas
+        SET cantidad_productos = %s, fecha_venta = %s, total = %s
+        WHERE idVentas = %s
+    """, (cantidad_productos, fecha_venta, total, id))
+    
+    mysql.connection.commit()
 
-            # Verificar si la actualización fue exitosa
-            if cur.rowcount == 0:
-                return jsonify({"error": "Venta no encontrada"}), 404
+    # Verificar si la actualización fue exitosa
+    if cur.rowcount == 0:
+        return jsonify({"error": "Venta no encontrada"}), 404
 
-            cur.close()
+    cur.close()
 
-            return jsonify({"mensaje": "Venta actualizada exitosamente"}), 200
-        except(Exception):
-            return jsonify({"error": "Error al actualizar"}), 400
+    return jsonify({"mensaje": "Venta actualizada exitosamente"}), 200
 
 
 @Mventa.route("/mantenedor_venta/detalle_productos", methods=["GET"])

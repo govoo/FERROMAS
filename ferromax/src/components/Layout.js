@@ -28,6 +28,7 @@ function Layout() {
               <Nav.Link as={Link} to="./usuario">Usuarios</Nav.Link>
               <Nav.Link as={Link} to="./venta">Ventas</Nav.Link>
               <Nav.Link as={Link} to="/">Cerrar sesión</Nav.Link>
+              <Nav.Link as={Link} to="/catalogo">Vista cliente</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>

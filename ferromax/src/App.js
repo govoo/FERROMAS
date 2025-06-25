@@ -28,7 +28,6 @@ function App() {
         <Route path="/transbank" element={<Transbank />} />
         <Route path="/retorno" element={<RetornoPage />} />
       </Routes>
-
     </Router>
   );
 }
