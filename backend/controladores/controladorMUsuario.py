@@ -109,6 +109,7 @@ def eliminar_usuario():
     id = request.args.get("id")
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM ventas WHERE Usuario_idUsuario = %s",(id,))
     cur.execute("DELETE FROM usuario WHERE idUsuario = %s", (id,))
     mysql.connection.commit()
     
