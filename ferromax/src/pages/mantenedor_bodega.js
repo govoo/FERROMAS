@@ -55,6 +55,19 @@ function BodegaCrud() {
   };
 
   const confirmarEdicion = async () => {
+
+      const datos = {
+    cantidad_productos: parseInt(formData.cantidad_productos),
+    fecha_vencimiento: formData.fecha_vencimiento,
+    estado_producto: parseInt(formData.estado_producto)
+  };
+
+  console.log("📤 Datos que se enviarán al backend:", datos);
+  console.log("📊 Tipos:", {
+    cantidad_productos: typeof datos.cantidad_productos,
+    fecha_vencimiento: typeof datos.fecha_vencimiento,
+    estado_producto: typeof datos.estado_producto
+  });
     let res;
     if (editIndex !== null) {
       const id = bodegas[editIndex].id;

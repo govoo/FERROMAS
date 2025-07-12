@@ -63,7 +63,7 @@ def crear_bodega():
 
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    if not isinstance(cantidad_productos,int) or not isinstance(estado_producto,int):
+    if cantidad_productos is None or estado_producto is None:
         return jsonify({"mensaje": "Datos mal ingresados"}), 400
     else:
         try:
@@ -76,7 +76,7 @@ def crear_bodega():
 
             return jsonify({"mensaje": "Bodega creada exitosamente"}), 201
         except(Exception):
-            return jsonify({"mensaje": "Error al ingresar datos"}), 400
+            return jsonify({"mensaje": "Error al ingresar datos " + Exception}), 400
 
 @Mbodega.route("/mantenedor_bodega/eliminar_bodega", methods=["DELETE"])
 def eliminar_bodega():
@@ -109,7 +109,7 @@ def editar_bodega():
 
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    if not isinstance(cantidad_productos,int) or not isinstance(estado_producto,int):
+    if cantidad_productos is None or estado_producto is None:
         return jsonify({"mensaje": "Datos mal ingresados"}), 400
     else:
         try:

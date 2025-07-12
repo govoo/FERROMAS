@@ -8,12 +8,20 @@ export async function fetchBodegas() {
 
 
 export async function crearBodega(bodega) {
-  return await fetch('http://localhost:5000/mantenedor_bodega/crear_bodega', {
+  const res = await fetch('http://localhost:5000/mantenedor_bodega/crear_bodega', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(bodega)
   });
+
+  const data = await res.json();
+  console.log("Respuesta backend:", data);
+  return {
+    ok: res.ok,
+    mensaje: data?.mensaje || data?.error || "Error desconocido"
+  };
 }
+
 
 export async function editarBodega(id, bodega) {
   return await fetch(`http://localhost:5000/mantenedor_bodega/editar_bodega?id=${id}`, {

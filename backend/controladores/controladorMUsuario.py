@@ -51,7 +51,7 @@ def crear_usuario():
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
     
-    if not isinstance(data["nombre"],str) or not isinstance(data["segundo_nombre"],str) or not isinstance(data["apellido"],str) or not isinstance(data["correo"],str) or not isinstance(data["telefono"],int) or not isinstance(data["contrasena"],str) or not isinstance(data["rol_id"],int):
+    if data["nombre"] is None or data["segundo_nombre"] is None or data["apellido"] is None or data["correo"] is None or data["telefono"] is None or data["contrasena"] is None or data["rol_id"] is None:
         return jsonify({"mensaje": "Datos mal ingresados"}), 400
     else:
         try:
@@ -80,7 +80,7 @@ def editar_usuario():
     data = request.get_json()
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
-    if not isinstance(data["nombre"],str) or not isinstance(data["segundo_nombre"],str) or not isinstance(data["apellido"],str) or not isinstance(data["correo"],str) or not isinstance(data["telefono"],int) or not isinstance(data["contrasena"],str) or not isinstance(data["rol_id"],int):
+    if data["nombre"] is None or data["segundo_nombre"] is None or data["apellido"] is None or data["correo"] is None or data["telefono"] is None or data["contrasena"] is None or data["rol_id"] is None:
         return jsonify({"mensaje": "Datos mal ingresados"}), 400
     else:
         try:
@@ -101,7 +101,7 @@ def editar_usuario():
             cur.close()
             return jsonify({"mensaje": "Usuario actualizado"}), 200
         except(Exception):
-            return jsonify({"mensaje": "Datos mal ingresados"}), 400
+            return jsonify({"mensaje": "Datos mal ingresados"}), 404
 
 # Eliminar usuario
 @Musuario.route("/mantenedor_usuario/eliminar_usuario", methods=["DELETE"])

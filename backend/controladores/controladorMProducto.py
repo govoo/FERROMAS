@@ -65,18 +65,15 @@ def crear_producto():
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
 
-    # ✅ Comprobar si existe la bodega
     cur.execute("SELECT idBodega FROM bodega WHERE idBodega = %s", (bodega,))
     existe_bodega = cur.fetchone()
 
-    # ✅ Si no existe, crear una bodega predeterminada con ese ID
     if not existe_bodega:
         cur.execute("""
             INSERT INTO bodega (idBodega, cantidad_producto, fecha_vencimiento, Estado_producto_idEstado_producto)
             VALUES (%s, %s, %s, %s)
         """, (bodega, 0, '2099-12-31', 1))
 
-    # ✅ Insertar producto
     cur.execute("""
         INSERT INTO producto (nombre_producto, precio_producto, bodega_idBodega)
         VALUES (%s, %s, %s)
