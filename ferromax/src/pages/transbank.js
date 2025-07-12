@@ -24,8 +24,10 @@ function Transbank() {
     0
   );
 
-  const eliminarProducto = (idProducto) => {
-    const nuevoCarrito = carrito.filter((p) => p.idProducto !== idProducto);
+  // Eliminar producto usando su índice (no idProducto)
+  const eliminarProducto = (index) => {
+    const nuevoCarrito = [...carrito];
+    nuevoCarrito.splice(index, 1); // Elimina solo ese producto
     setCarrito(nuevoCarrito);
     localStorage.setItem('carrito', JSON.stringify(nuevoCarrito));
   };
@@ -55,10 +57,8 @@ function Transbank() {
       console.log('Respuesta Transbank:', data);
 
       if (data.url && data.token) {
-        // Vaciar carrito y localStorage
         setCarrito([]);
         localStorage.removeItem('carrito');
-        // Redirigir a la URL de pago
         window.location.href = `${data.url}?token_ws=${data.token}`;
       } else {
         alert('Error al iniciar pago. Intenta nuevamente.');
@@ -86,9 +86,9 @@ function Transbank() {
               <p>No hay productos en el carrito.</p>
             ) : (
               <ListGroup>
-                {carrito.map((item) => (
+                {carrito.map((item, index) => (
                   <ListGroup.Item
-                    key={item.idProducto}
+                    key={index}
                     className="d-flex justify-content-between align-items-center"
                   >
                     <div>
@@ -97,7 +97,7 @@ function Transbank() {
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => eliminarProducto(item.idProducto)}
+                      onClick={() => eliminarProducto(index)}
                     >
                       Eliminar
                     </Button>

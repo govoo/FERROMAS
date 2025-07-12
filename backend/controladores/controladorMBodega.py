@@ -80,11 +80,18 @@ def eliminar_bodega():
 
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
+
+    # Eliminar productos asociados a la bodega (nombre correcto de la columna)
+    cur.execute("DELETE FROM producto WHERE bodega_idBodega = %s", (id,))
+
+    # Eliminar la bodega
     cur.execute("DELETE FROM bodega WHERE idBodega = %s", (id,))
+    
     mysql.connection.commit()
     cur.close()
 
-    return jsonify({"mensaje": "Bodega eliminada exitosamente"}), 200
+    return jsonify({"mensaje": "Bodega y productos asociados eliminados exitosamente"}), 200
+
 
 @Mbodega.route("/mantenedor_bodega/editar_bodega", methods=["PUT"])
 def editar_bodega():
