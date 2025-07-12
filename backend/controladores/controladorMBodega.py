@@ -80,6 +80,7 @@ def eliminar_bodega():
 
     mysql = current_app.extensions["mysql"]
     cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM producto WHERE bodega_idBodega = %s", (id,))
     cur.execute("DELETE FROM bodega WHERE idBodega = %s", (id,))
     mysql.connection.commit()
     cur.close()
