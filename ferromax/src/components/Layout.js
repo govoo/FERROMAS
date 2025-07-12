@@ -1,11 +1,18 @@
-// src/components/Layout.js
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { Container, Navbar, Nav } from 'react-bootstrap';
 import ferromasLogo from '../img/ferromas_logo.svg';
-import '../styles/navbar.css'; // Asegúrate de crear este archivo
+import { logout } from '../services/authService';
+import '../styles/navbar.css';
 
 function Layout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <>
       <Navbar expand="lg" className="ferromas-navbar" sticky="top">
@@ -27,7 +34,7 @@ function Layout() {
               <Nav.Link as={Link} to="./producto">Productos</Nav.Link>
               <Nav.Link as={Link} to="./usuario">Usuarios</Nav.Link>
               <Nav.Link as={Link} to="./venta">Ventas</Nav.Link>
-              <Nav.Link as={Link} to="/">Cerrar sesión</Nav.Link>
+              <Nav.Link onClick={handleLogout}>Cerrar sesión</Nav.Link>
               <Nav.Link as={Link} to="/catalogo">Vista cliente</Nav.Link>
             </Nav>
           </Navbar.Collapse>

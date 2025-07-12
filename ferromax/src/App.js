@@ -9,14 +9,25 @@ import Bodega from './pages/mantenedor_bodega';
 import CatalogoCliente from './pages/cliente';
 import Transbank from './pages/transbank';
 import RetornoPage from './pages/retornoPage';
+import PrivateRoute from './components/PrivateRoute';
 import './styles/main-content.css';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Rutas públicas */}
         <Route path="/" element={<Login />} />
-        <Route path="/ferromas" element={<Layout />}>
+        <Route path="/catalogo" element={<CatalogoCliente />} />
+        <Route path="/transbank" element={<Transbank />} />
+        <Route path="/retorno" element={<RetornoPage />} />
+
+        {/* Rutas privadas bajo /ferromas */}
+        <Route path="/ferromas" element={
+          <PrivateRoute>
+            <Layout />
+          </PrivateRoute>
+        }>
           <Route path="home" element={<Home />} />
           <Route path="usuario" element={<Usuario />} />
           <Route path="producto" element={<Producto />} />
@@ -24,9 +35,6 @@ function App() {
           <Route path="bodega" element={<Bodega />} />
           <Route path="pago" element={<Transbank />} />
         </Route>
-        <Route path="/catalogo" element={<CatalogoCliente />} />
-        <Route path="/transbank" element={<Transbank />} />
-        <Route path="/retorno" element={<RetornoPage />} />
       </Routes>
     </Router>
   );

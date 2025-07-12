@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { getToken } from '../services/authService';
 import '../styles/login.css';
 
 function Login() {
@@ -20,19 +21,22 @@ function Login() {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:5000/mantenedor_usuario/login_usuario', {
+      const res = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          username: formData.email,
+          password: formData.password
+        }),
       });
 
       const data = await res.json();
 
-      if (res.ok && data.success) {
-        localStorage.setItem('usuario', JSON.stringify(data.usuario));
+      if (res.ok && data.access_token) {
+        localStorage.setItem('token', data.access_token);
         navigate('/ferromas/home');
       } else {
-        setError(data.message || 'Credenciales inválidas');
+        setError(data.msg || 'Credenciales inválidas');
       }
     } catch (err) {
       console.error(err);
