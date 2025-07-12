@@ -16,13 +16,22 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Rutas públicas */}
+        {/* Ruta pública de login */}
         <Route path="/" element={<Login />} />
-        <Route path="/catalogo" element={<CatalogoCliente />} />
-        <Route path="/transbank" element={<Transbank />} />
-        <Route path="/retorno" element={<RetornoPage />} />
 
-        {/* Rutas privadas bajo /ferromas */}
+        {/* Rutas privadas independientes */}
+        <Route path="/catalogo" element={
+          <PrivateRoute>
+            <CatalogoCliente />
+          </PrivateRoute>
+        } />
+        <Route path="/transbank" element={
+          <PrivateRoute>
+            <Transbank />
+          </PrivateRoute>
+        } />
+
+        {/* Rutas privadas agrupadas bajo /ferromas */}
         <Route path="/ferromas" element={
           <PrivateRoute>
             <Layout />
@@ -35,6 +44,9 @@ function App() {
           <Route path="bodega" element={<Bodega />} />
           <Route path="pago" element={<Transbank />} />
         </Route>
+
+        {/* Ruta pública de retorno Webpay */}
+        <Route path="/retorno" element={<RetornoPage />} />
       </Routes>
     </Router>
   );

@@ -173,3 +173,18 @@ def detalle_productos_venta():
     ]
 
     return jsonify({"productos": productos})
+
+@Mventa.route("/mantenedor_venta/usuarios", methods=["GET"])
+def obtener_usuarios():
+    try:
+        mysql = current_app.extensions["mysql"]
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT idUsuario FROM usuario ORDER BY idUsuario ASC")
+        data = cur.fetchall()
+        cur.close()
+
+        usuarios = [{"id": row[0]} for row in data]
+        return jsonify({"usuarios": usuarios})
+    except Exception as e:
+        print("Error al obtener usuarios:", e)
+        return jsonify({"usuarios": []}), 500

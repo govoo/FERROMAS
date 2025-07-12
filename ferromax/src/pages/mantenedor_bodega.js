@@ -27,6 +27,15 @@ function BodegaCrud() {
   const [currentPage, setCurrentPage] = useState(1);
   const bodegasPorPagina = 6;
 
+  const [mensajeAlerta, setMensajeAlerta] = useState(null);
+  const [tipoAlerta, setTipoAlerta] = useState('success');
+
+  const mostrarAlerta = (tipo, mensaje) => {
+    setTipoAlerta(tipo);
+    setMensajeAlerta(mensaje);
+    setTimeout(() => setMensajeAlerta(null), 4000);
+  };
+
   useEffect(() => {
     cargarBodegas();
   }, []);
@@ -46,12 +55,24 @@ function BodegaCrud() {
   };
 
   const confirmarEdicion = async () => {
+    let res;
     if (editIndex !== null) {
       const id = bodegas[editIndex].id;
-      await editarBodega(id, formData);
+      res = await editarBodega(id, formData);
+      if (res.ok) {
+        mostrarAlerta('success', 'Bodega actualizada exitosamente');
+      } else {
+        mostrarAlerta('danger', res.mensaje || 'Error al actualizar bodega');
+      }
     } else {
-      await crearBodega(formData);
+      res = await crearBodega(formData);
+      if (res.ok) {
+        mostrarAlerta('success', 'Bodega creada exitosamente');
+      } else {
+        mostrarAlerta('danger', res.mensaje || 'Error al crear bodega');
+      }
     }
+
     cerrarModales();
     cargarBodegas();
   };
@@ -85,7 +106,13 @@ function BodegaCrud() {
   };
 
   const confirmarEliminacion = async () => {
-    await eliminarBodega(bodegaPendiente.id);
+    const res = await eliminarBodega(bodegaPendiente.id);
+    if (res.ok) {
+      mostrarAlerta('success', 'Bodega eliminada exitosamente');
+    } else {
+      mostrarAlerta('danger', res.mensaje || 'Error al eliminar bodega');
+    }
+
     setShowConfirmDelete(false);
     setBodegaPendiente(null);
     cargarBodegas();
@@ -103,6 +130,12 @@ function BodegaCrud() {
 
   return (
     <div className="main-content">
+      {mensajeAlerta && (
+        <div className={`alert alert-${tipoAlerta} alert-flotante`} role="alert">
+          {mensajeAlerta}
+        </div>
+      )}
+
       <div className="bodega-box">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h3>Gestión de Bodegas</h3>

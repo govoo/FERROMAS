@@ -8,10 +8,12 @@ import {
   eliminarVenta,
   editarVenta,
   crearVenta,
+  fetchUsuarios
 } from '../services/ventaService';
 
 function VentasCrud() {
   const [ventas, setVentas] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [ventaVer, setVentaVer] = useState(null);
   const [ventaEditar, setVentaEditar] = useState(null);
   const [ventaPendiente, setVentaPendiente] = useState(null);
@@ -30,11 +32,21 @@ function VentasCrud() {
 
   useEffect(() => {
     cargarVentas();
+    cargarUsuarios();
   }, []);
 
   const cargarVentas = async () => {
     const data = await fetchVentas();
     setVentas(data);
+  };
+
+  const cargarUsuarios = async () => {
+    try {
+      const data = await fetchUsuarios();
+      setUsuarios(data);
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+    }
   };
 
   const cambiarEstado = (id, nuevoEstado) => {
@@ -82,7 +94,11 @@ function VentasCrud() {
     }
     try {
       const { id, cantidad_productos, fecha_venta, total } = ventaEditar;
-      const datosActualizados = { cantidad_productos, fecha_venta, total };
+      const datosActualizados = {
+        cantidad_productos: parseInt(cantidad_productos),
+        fecha_venta,
+        total: parseInt(total)
+      };
       await editarVenta(id, datosActualizados);
       setShowEditModal(false);
       setVentaEditar(null);
@@ -95,11 +111,21 @@ function VentasCrud() {
 
   const confirmarAgregarVenta = async () => {
     try {
-      if (!nuevaVenta.usuario_id || !nuevaVenta.cantidad_productos || !nuevaVenta.fecha_venta || !nuevaVenta.total) {
+      const { usuario_id, cantidad_productos, fecha_venta, total } = nuevaVenta;
+
+      if (!usuario_id || !cantidad_productos || !fecha_venta || !total) {
         alert('Por favor completa todos los campos.');
         return;
       }
-      await crearVenta(nuevaVenta);
+
+      const ventaFormateada = {
+        usuario_id: parseInt(usuario_id),
+        cantidad_productos: parseInt(cantidad_productos),
+        fecha_venta,
+        total: parseInt(total)
+      };
+
+      await crearVenta(ventaFormateada);
       setShowAddModal(false);
       setNuevaVenta({
         usuario_id: '',
@@ -110,7 +136,7 @@ function VentasCrud() {
       cargarVentas();
     } catch (error) {
       console.error('Error al crear venta:', error);
-      alert('Ocurrió un error al crear la venta');
+      alert(error.response?.data?.error || 'Ocurrió un error al crear la venta');
     }
   };
 
@@ -265,12 +291,17 @@ function VentasCrud() {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>ID Usuario</Form.Label>
-              <Form.Control
-                type="number"
+              <Form.Select
                 value={nuevaVenta.usuario_id}
                 onChange={(e) => setNuevaVenta({ ...nuevaVenta, usuario_id: e.target.value })}
-                placeholder="ID del usuario"
-              />
+              >
+                <option value="">Selecciona un usuario</option>
+                {usuarios.map(usuario => (
+                  <option key={usuario.id} value={usuario.id}>
+                    {usuario.id} - {usuario.nombre}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Cantidad de Productos</Form.Label>

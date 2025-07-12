@@ -32,6 +32,15 @@ function UsuarioCrud() {
   const [currentPage, setCurrentPage] = useState(1);
   const usuariosPorPagina = 6;
 
+  const [mensajeAlerta, setMensajeAlerta] = useState(null);
+  const [tipoAlerta, setTipoAlerta] = useState('success');
+
+  const mostrarAlerta = (tipo, mensaje) => {
+    setTipoAlerta(tipo);
+    setMensajeAlerta(mensaje);
+    setTimeout(() => setMensajeAlerta(null), 4000);
+  };
+
   useEffect(() => {
     cargarUsuarios();
     cargarRoles();
@@ -39,12 +48,12 @@ function UsuarioCrud() {
 
   const cargarUsuarios = async () => {
     const data = await fetchUsuarios();
-    setUsuarios(data.usuarios || []);
+    const usuariosOrdenados = (data.usuarios || []).sort((a, b) => a.id - b.id);
+    setUsuarios(usuariosOrdenados);
   };
 
   const cargarRoles = async () => {
     const data = await fetchRoles();
-    console.log("✅ Roles cargados:", data);
     setRoles(data || []);
   };
 
@@ -58,12 +67,24 @@ function UsuarioCrud() {
   };
 
   const confirmarEdicion = async () => {
+    let res;
     if (editIndex !== null) {
       const id = usuarios[editIndex].id;
-      await editarUsuario(id, formData);
+      res = await editarUsuario(id, formData);
+      if (res.ok) {
+        mostrarAlerta('success', 'Usuario actualizado exitosamente');
+      } else {
+        mostrarAlerta('danger', res.mensaje || 'Error al actualizar usuario');
+      }
     } else {
-      await crearUsuario(formData);
+      res = await crearUsuario(formData);
+      if (res.ok) {
+        mostrarAlerta('success', 'Usuario creado exitosamente');
+      } else {
+        mostrarAlerta('danger', res.mensaje || 'Error al crear usuario');
+      }
     }
+
     cerrarModales();
     cargarUsuarios();
   };
@@ -105,7 +126,13 @@ function UsuarioCrud() {
   };
 
   const confirmarEliminacion = async () => {
-    await eliminarUsuario(usuarioPendiente.id);
+    const res = await eliminarUsuario(usuarioPendiente.id);
+    if (res.ok) {
+      mostrarAlerta('success', 'Usuario eliminado exitosamente');
+    } else {
+      mostrarAlerta('danger', res.mensaje || 'Error al eliminar usuario');
+    }
+
     setShowConfirmDelete(false);
     setUsuarioPendiente(null);
     cargarUsuarios();
@@ -123,6 +150,12 @@ function UsuarioCrud() {
 
   return (
     <div className="main-content">
+      {mensajeAlerta && (
+        <div className={`alert alert-${tipoAlerta} alert-flotante`} role="alert">
+          {mensajeAlerta}
+        </div>
+      )}
+
       <div className="usuario-box">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h3>Gestión de Usuarios</h3>
@@ -298,4 +331,3 @@ function UsuarioCrud() {
 }
 
 export default UsuarioCrud;
-  
